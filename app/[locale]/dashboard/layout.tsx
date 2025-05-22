@@ -1,0 +1,52 @@
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Providers } from "./_components/providers";
+import TopBar from "./_components/TopBar";
+import { SimpleLoadingIndicator } from "@/components/loading-indicator";
+import { getTranslations } from "next-intl/server";
+
+export async function generateMetadata({
+  params: { locale },
+}: {
+  params: { locale: string };
+}) {
+  const t = await getTranslations({ locale, namespace: "Metadata.Dashboard" });
+
+  return {
+    title: t("title"), // e.g., "Dashboard - Kamerschools" or "Tableau de Bord - Kamerschools"
+    description: t("description"), // e.g., "Manage your school operations with Kamerschools."
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
+}
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <Providers>
+      <SimpleLoadingIndicator />
+      <SidebarProvider>
+        <AppSidebar />
+        <main className="flex flex-1 flex-col w-full min-h-screen">
+          <header className="w-full sticky top-0 z-50">
+            <div className="lg:hidden absolute top-4 left-4 z-20">
+              <SidebarTrigger />
+            </div>
+            <TopBar />
+          </header>
+          <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+            {children}
+          </div>
+        </main>
+      </SidebarProvider>
+    </Providers>
+  );
+}
