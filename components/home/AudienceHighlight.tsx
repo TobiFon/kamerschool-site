@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import DeviceFrame from "./DeviceFrame";
+import DeviceFrame from "./DeviceFrame"; // Assuming DeviceFrame.tsx is in the same directory or path is correct
 import {
   ArrowRight,
   Users,
@@ -17,12 +17,18 @@ import {
   Heart,
   Bell,
 } from "lucide-react";
-import { useLocalizedAsset } from "@/lib/assets-utils"; // Import the hook
+import {
+  useLocalizedAsset,
+  CloudinaryAssetOptions,
+  AssetType,
+} from "@/lib/assets-utils"; // Import the hook and types
 
-// Base asset paths (will be localized)
-const baseAdminDashboardImage = "/tablet-phone/tablet-1.png";
-const baseParentAppOverviewImage = "/tablet-phone/phone-2.png";
-const baseParentAppResultsImage = "/tablet-phone/phone-1.png";
+// Base asset paths (will be localized by the hook)
+// These paths should NOT have leading slashes and NO file extensions
+// They represent the path *after* `kamerschools/{locale}/`
+const baseAdminDashboardImagePath = "tablet-phone/tablet-1";
+const baseParentAppOverviewImagePath = "tablet-phone/phone-2";
+const baseParentAppResultsImagePath = "tablet-phone/phone-1";
 
 interface AudienceHighlightProps {
   type: "admin" | "parent";
@@ -32,12 +38,32 @@ export default function AudienceHighlight({ type }: AudienceHighlightProps) {
   const tKey = type === "admin" ? "ForAdmins" : "ForParents";
   const t = useTranslations(`HomePage.AudienceHighlights.${tKey}`);
   const sectionRef = useRef(null);
-  const getAssetPath = useLocalizedAsset(); // Initialize the hook
+  const getAssetPath = useLocalizedAsset();
 
-  // Localize asset paths
-  const adminDashboardImage = getAssetPath(baseAdminDashboardImage);
-  const parentAppOverviewImage = getAssetPath(baseParentAppOverviewImage);
-  const parentAppResultsImage = getAssetPath(baseParentAppResultsImage);
+  // Define common image options for these display areas
+  // Adjust width/quality as needed for optimal display and performance
+  const imageDisplayOptions: CloudinaryAssetOptions = {
+    width: 800, // Example width, adjust based on DeviceFrame's typical display size
+    quality: "auto:good",
+    format: "auto", // Let Cloudinary choose the best format (e.g., avif, webp)
+  };
+
+  // Localize asset paths using the hook, specifying 'image' type and options
+  const adminDashboardImage = getAssetPath(
+    baseAdminDashboardImagePath,
+    "image",
+    imageDisplayOptions
+  );
+  const parentAppOverviewImage = getAssetPath(
+    baseParentAppOverviewImagePath,
+    "image",
+    imageDisplayOptions
+  );
+  const parentAppResultsImage = getAssetPath(
+    baseParentAppResultsImagePath,
+    "image",
+    imageDisplayOptions
+  );
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -59,7 +85,14 @@ export default function AudienceHighlight({ type }: AudienceHighlightProps) {
     ["20px", "0px", "0px", "-20px"]
   );
 
-  const benefits = t.raw("benefits") as Array<{ icon: string; text: string }>;
+  // Ensure t.raw returns the expected structure or provide a fallback
+  const benefitsData = t.raw("benefits");
+  const benefits: Array<{ icon: string; text: string }> = Array.isArray(
+    benefitsData
+  )
+    ? benefitsData
+    : [];
+
   const getIcon = (iconName: string) => {
     const iconProps = {
       className: "w-5 h-5 text-primary flex-shrink-0",
@@ -85,7 +118,7 @@ export default function AudienceHighlight({ type }: AudienceHighlightProps) {
       case "Bell":
         return <Bell {...iconProps} />;
       default:
-        return <ArrowRight {...iconProps} />;
+        return <ArrowRight {...iconProps} />; // Fallback icon
     }
   };
 
@@ -98,13 +131,9 @@ export default function AudienceHighlight({ type }: AudienceHighlightProps) {
     },
   };
 
-  // Determine device rotations based on type and layout
   const adminDeviceRotation = imageFirstOnDesktop
     ? { y: -8, z: 3 }
     : { y: 8, z: -3 };
-  // Parent device rotations are handled more internally by DeviceFrame for dual mobile setup,
-  // but we can provide a base initial overall rotation if needed.
-  // For this example, we let DeviceFrame manage it based on its internal logic for `type="mobile"` with `src2`.
 
   return (
     <section
@@ -153,22 +182,23 @@ export default function AudienceHighlight({ type }: AudienceHighlightProps) {
             {type === "admin" ? (
               <DeviceFrame
                 type="tablet"
-                src={adminDashboardImage} // Pass localized path
+                src={adminDashboardImage} // Use localized path
                 alt={t("imageAlt")}
-                priority
+                priority // Consider if this is always above the fold on mobile
                 initialRotation={{ y: 5, z: -2 }}
-                scrollParallaxDepth={0.7} // Adjusted for mobile
+                scrollParallaxDepth={0.7}
                 containerScrollProgress={scrollYProgress}
               />
             ) : (
               <DeviceFrame
                 type="mobile"
-                src={parentAppOverviewImage} // Pass localized path
+                src={parentAppOverviewImage} // Use localized path
                 alt={t("imageAlt")}
-                src2={parentAppResultsImage} // Pass localized path
+                src2={parentAppResultsImage} // Use localized path
                 alt2={t("imageAlt2", { defaultValue: t("imageAlt") })}
+                priority // Consider if this is always above the fold on mobile
                 initialRotation={{ z: 0 }}
-                scrollParallaxDepth={0.8} // Adjusted for mobile
+                scrollParallaxDepth={0.8}
                 containerScrollProgress={scrollYProgress}
               />
             )}
@@ -298,14 +328,14 @@ export default function AudienceHighlight({ type }: AudienceHighlightProps) {
             } mt-10 md:mt-0 
                         ${
                           type === "admin"
-                            ? "md:pl-8 lg:pl-12" // Adjusted padding slightly
-                            : "md:pr-8 lg:pr-12" // Adjusted padding slightly
+                            ? "md:pl-8 lg:pl-12"
+                            : "md:pr-8 lg:pr-12"
                         } `}
           >
             {type === "admin" ? (
               <DeviceFrame
                 type="tablet"
-                src={adminDashboardImage} // Pass localized path
+                src={adminDashboardImage} // Use localized path
                 alt={t("imageAlt")}
                 priority
                 initialRotation={adminDeviceRotation}
@@ -315,12 +345,13 @@ export default function AudienceHighlight({ type }: AudienceHighlightProps) {
             ) : (
               <DeviceFrame
                 type="mobile"
-                src={parentAppOverviewImage} // Pass localized path
+                src={parentAppOverviewImage} // Use localized path
                 alt={t("imageAlt")}
-                src2={parentAppResultsImage} // Pass localized path
+                src2={parentAppResultsImage} // Use localized path
                 alt2={t("imageAlt2", { defaultValue: t("imageAlt") })}
-                initialRotation={{ y: 0, z: 0 }} // Keep overall initial rotation minimal for parent section
-                scrollParallaxDepth={1.2} // Slightly more depth for dual mobiles
+                priority
+                initialRotation={{ y: 0, z: 0 }}
+                scrollParallaxDepth={1.2}
                 containerScrollProgress={scrollYProgress}
               />
             )}

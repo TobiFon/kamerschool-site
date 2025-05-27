@@ -6,10 +6,12 @@ import { SimpleLoadingIndicator } from "@/components/loading-indicator";
 import { getTranslations } from "next-intl/server";
 
 export async function generateMetadata({
-  params: { locale },
+  params,
 }: {
   params: { locale: string };
 }) {
+  const awaitedParams = await params;
+  const locale = awaitedParams.locale;
   const t = await getTranslations({ locale, namespace: "Metadata.Dashboard" });
 
   return {

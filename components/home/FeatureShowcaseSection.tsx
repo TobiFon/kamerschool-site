@@ -5,20 +5,23 @@ import { AnimatePresence, motion, useInView } from "framer-motion";
 import FeatureNavItem from "./FeatureNavItem";
 import FeatureDisplay from "./FeatureDisplay";
 import { X } from "lucide-react";
-// Import the raw data and the final feature type
+
 import {
+  AssetType,
+  CloudinaryAssetOptions,
+  useLocalizedAsset,
+} from "@/lib/assets-utils"; // Import AssetType and Options
+import Image from "next/image";
+import {
+  RawShowcaseFeatureData,
   ShowcaseFeature,
   showcaseFeaturesRawData,
-  RawShowcaseFeatureData,
 } from "./fetaturesShowcase";
-import { useLocalizedAsset } from "@/lib/assets-utils";
-import Image from "next/image"; // Import NextImage
 
 export default function FeatureShowcaseSection() {
   const t = useTranslations("HomePage.FeatureShowcase");
   const getAssetPath = useLocalizedAsset();
 
-  // Memoize the translated features to avoid re-calculating on every render
   const translatedShowcaseFeatures = useMemo(() => {
     return showcaseFeaturesRawData.map(
       (feature: RawShowcaseFeatureData): ShowcaseFeature => ({
@@ -53,28 +56,38 @@ export default function FeatureShowcaseSection() {
     if (feature.mockupType === "video" || feature.mockupType === "image") {
       setModalContent(feature);
       setIsModalOpen(true);
-      // document.body.style.overflow = "hidden"; // Handled by useEffect
     }
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    // document.body.style.overflow = "unset"; // Handled by useEffect
-    setTimeout(() => setModalContent(null), 300); // Delay clearing content for exit animation
+    setTimeout(() => setModalContent(null), 300);
   };
 
   useEffect(() => {
+    // Optional: Preload assets
     translatedShowcaseFeatures.forEach((feature) => {
-      if (feature.mockupType === "video" && feature.mockupSrc) {
-        const video = document.createElement("video");
-        video.src = getAssetPath(feature.mockupSrc);
-        video.preload = "metadata"; // "auto" or "metadata"
+      if (feature.mockupSrc) {
+        const type = feature.mockupType as AssetType; // Cast since mockupType matches AssetType
+        const options: CloudinaryAssetOptions = { width: 640 }; // Example small preload size
+        const src = getAssetPath(feature.mockupSrc, type, options);
+        if (type === "video") {
+          const video = document.createElement("video");
+          video.src = src;
+          video.preload = "metadata";
+        } else {
+          const img = new window.Image();
+          img.src = src;
+        }
       }
-      // Preload images if needed (less critical than videos usually)
-      // if (feature.mockupType === "image" && feature.mockupSrc) {
-      //   const img = new window.Image();
-      //   img.src = getAssetPath(feature.mockupSrc);
-      // }
+      if (feature.posterSrc) {
+        const posterImg = new window.Image();
+        posterImg.src = getAssetPath(feature.posterSrc, "image", {
+          format: "jpg",
+          quality: "good",
+          width: 640,
+        });
+      }
     });
   }, [getAssetPath, translatedShowcaseFeatures]);
 
@@ -85,7 +98,7 @@ export default function FeatureShowcaseSection() {
       document.body.style.overflow = "unset";
     }
     return () => {
-      document.body.style.overflow = "unset"; // Cleanup on component unmount
+      document.body.style.overflow = "unset";
     };
   }, [isModalOpen]);
 
@@ -108,7 +121,6 @@ export default function FeatureShowcaseSection() {
   };
 
   if (!activeFeature) {
-    // Handle case where activeFeature might be undefined briefly
     return null;
   }
 
@@ -152,7 +164,7 @@ export default function FeatureShowcaseSection() {
             {translatedShowcaseFeatures.map((feature) => (
               <FeatureNavItem
                 key={feature.id}
-                feature={feature} // Pass the fully translated feature object
+                feature={feature}
                 isActive={activeFeatureId === feature.id}
                 onSelect={() => handleFeatureSelect(feature.id)}
               />
@@ -171,7 +183,7 @@ export default function FeatureShowcaseSection() {
           >
             <div className="sticky top-28">
               <FeatureDisplay
-                feature={activeFeature} // Pass the fully translated active feature
+                feature={activeFeature}
                 onMediaClick={() => openModal(activeFeature)}
               />
             </div>
@@ -195,7 +207,7 @@ export default function FeatureShowcaseSection() {
               className="space-y-4 rounded-xl bg-card dark:bg-slate-800/40 p-3 shadow-lg border border-border/50"
             >
               <FeatureNavItem
-                feature={feature} // Pass the fully translated feature object
+                feature={feature}
                 isActive={activeFeatureId === feature.id}
                 onSelect={() => handleFeatureSelect(feature.id)}
               />
@@ -209,7 +221,7 @@ export default function FeatureShowcaseSection() {
                     className="overflow-hidden"
                   >
                     <FeatureDisplay
-                      feature={feature} // Pass the fully translated feature
+                      feature={feature}
                       onMediaClick={() => openModal(feature)}
                     />
                   </motion.div>
@@ -234,7 +246,7 @@ export default function FeatureShowcaseSection() {
             <motion.button
               onClick={closeModal}
               className="absolute top-4 right-4 md:top-6 md:right-6 text-white/70 bg-black/50 rounded-full p-2.5 hover:bg-white/20 hover:text-white transition-colors z-10"
-              aria-label={t("closeMediaViewer")} // Translated aria-label
+              aria-label={t("closeMediaViewer")}
             >
               <X className="w-5 h-5 md:w-6 md:h-6" />
             </motion.button>
@@ -248,33 +260,41 @@ export default function FeatureShowcaseSection() {
                 transition: { duration: 0.25, ease: "easeIn" },
               }}
               transition={{ type: "spring", stiffness: 200, damping: 25 }}
-              className="relative w-full 
-                        max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl
-                        bg-slate-950 rounded-lg shadow-2xl overflow-hidden"
+              className="relative w-full max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl bg-slate-950 rounded-lg shadow-2xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               {modalContent.mockupType === "video" ? (
                 <div className="aspect-video">
                   <video
-                    src={getAssetPath(modalContent.mockupSrc)}
+                    src={getAssetPath(modalContent.mockupSrc, "video", {
+                      width: 1920,
+                      quality: "auto:good",
+                    })}
                     poster={
                       modalContent.posterSrc
-                        ? getAssetPath(modalContent.posterSrc)
+                        ? getAssetPath(modalContent.posterSrc, "image", {
+                            format: "jpg",
+                            quality: "good",
+                            width: 1920,
+                          })
                         : undefined
                     }
                     className="w-full h-full object-contain"
                     autoPlay
                     controls
                     playsInline
-                    aria-label={modalContent.altText} // Use altText for video label
+                    aria-label={modalContent.altText}
                   />
                 </div>
               ) : (
                 <Image
-                  src={getAssetPath(modalContent.mockupSrc)}
-                  alt={modalContent.altText} // altText is already translated
-                  width={1920}
-                  height={1080}
+                  src={getAssetPath(modalContent.mockupSrc, "image", {
+                    width: 1920,
+                    quality: "auto:good",
+                  })}
+                  alt={modalContent.altText}
+                  width={1920} // Provide layout width
+                  height={1080} // Provide layout height
                   className="w-full h-auto max-h-[85vh] object-contain"
                   priority
                 />

@@ -30,6 +30,11 @@ const nextConfig: NextConfig = {
         port: "8000",
         pathname: "**",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        pathname: `/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/**`, // Use your cloud name env var
+      },
     ],
   },
 
