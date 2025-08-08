@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { Search, Download, Edit, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface SearchAndExportProps {
   searchQuery: string;
@@ -20,6 +21,7 @@ const SearchAndExport: React.FC<SearchAndExportProps> = ({
   hasScores,
 }) => {
   const t = useTranslations("Results");
+  const { canEdit } = useCurrentUser();
 
   return (
     <div className="flex flex-col md:flex-row gap-2 md:gap-4 md:ml-auto w-full md:w-auto">
@@ -45,6 +47,7 @@ const SearchAndExport: React.FC<SearchAndExportProps> = ({
           variant="default"
           className="flex items-center"
           onClick={onEditScores}
+          disabled={!canEdit}
         >
           {hasScores ? (
             <>

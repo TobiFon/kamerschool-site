@@ -19,12 +19,14 @@ interface FeeTypeColumnsProps {
   t: (key: string) => string; // Translation function from useTranslations("Common") usually
   onEdit: (feeType: FeeType) => void;
   onDelete: (feeType: FeeType) => void;
+  canEdit: boolean; // Prop to receive permission status
 }
 
 export const FeeTypeColumns = ({
   t,
   onEdit,
   onDelete,
+  canEdit,
 }: FeeTypeColumnsProps): ColumnDef<FeeType>[] => [
   {
     accessorKey: "name",
@@ -91,7 +93,11 @@ export const FeeTypeColumns = ({
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button
+              variant="ghost"
+              className="h-8 w-8 p-0"
+              disabled={!canEdit} // The button is disabled if user cannot edit
+            >
               <span className="sr-only">{t("openMenu")}</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>

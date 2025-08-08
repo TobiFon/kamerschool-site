@@ -2,14 +2,16 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Calculator } from "lucide-react";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const SearchAndExportSequence = ({ handleCalculateResults, isCalculating }) => {
   const t = useTranslations("Results");
+  const { canEdit } = useCurrentUser();
 
   return (
     <Button
       onClick={handleCalculateResults}
-      disabled={isCalculating}
+      disabled={isCalculating || !canEdit}
       className="flex items-center flex-1 md:flex-none md:ml-2"
       variant="default"
     >

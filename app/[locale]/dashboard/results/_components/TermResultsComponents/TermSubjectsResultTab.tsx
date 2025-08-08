@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface TermSubjectTabProps {
   termId: number;
@@ -47,6 +48,7 @@ const TermSubjectTab: React.FC<TermSubjectTabProps> = ({
   const [page, setPage] = useState<number>(1);
   const [pageSize] = useState<number>(50);
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
+  const { canEdit } = useCurrentUser();
   // const tp = useTranslations("pdfs");
 
   // Calculation state

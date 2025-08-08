@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, PenLine } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface SubjectsTabProps {
   classData: any;
@@ -22,6 +23,7 @@ interface SubjectsTabProps {
 const SubjectsTab: React.FC<SubjectsTabProps> = ({ classData }) => {
   const t = useTranslations("Classes");
   const router = useRouter();
+  const { canEdit } = useCurrentUser();
 
   const hasSubjects =
     classData.class_subjects && classData.class_subjects.length > 0;
@@ -35,6 +37,7 @@ const SubjectsTab: React.FC<SubjectsTabProps> = ({ classData }) => {
         </h3>
         <Button
           size="sm"
+          disabled={!canEdit}
           onClick={() =>
             router.push(`/dashboard/classes/${classData.id}/class-subjects`)
           }

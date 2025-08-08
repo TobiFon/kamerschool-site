@@ -7,12 +7,10 @@ import {
   Loader2,
   CalendarDays,
   GraduationCap,
-  BarChart,
   LineChart,
   School,
   Filter,
   Calendar,
-  Download,
   BookOpen,
   ClipboardList,
 } from "lucide-react";
@@ -43,9 +41,9 @@ import SchoolOverview from "./_components/SchoolPerformanceOverview";
 import ClassDetails from "./_components/ClassDetails";
 import SubjectAnalysis from "./_components/SubjectAnalysis";
 import ClassComparisonView from "./_components/ClassComp";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const AnalyticsComponent = () => {
-  // Internationalization hook using the "Analytics" namespace
   const t = useTranslations("Analytics");
 
   // State for filters
@@ -56,49 +54,36 @@ const AnalyticsComponent = () => {
   const [selectedTab, setSelectedTab] = useState<string>("school");
   const [timeScope, setTimeScope] = useState<string>("term");
 
-  // Fetch academic years
-  const {
-    data: academicYears,
-    isLoading: isLoadingYears,
-    error: yearsError,
-  } = useQuery({
+  // State for Subject Analysis tab
+  const [subjectFilter, setSubjectFilter] = useState<string>("");
+  const debouncedSubjectFilter = useDebounce(subjectFilter, 500);
+  const [sortField, setSortField] = useState("average_score");
+  const [sortDirection, setSortDirection] = useState("desc");
+
+  // --- Data Fetching Queries ---
+  const { data: academicYears, isLoading: isLoadingYears } = useQuery({
     queryKey: ["academicYears"],
     queryFn: fetchAcademicYears,
   });
 
-  // Fetch terms based on selected academic year
-  const {
-    data: terms,
-    isLoading: isLoadingTerms,
-    error: termsError,
-  } = useQuery({
+  const { data: terms, isLoading: isLoadingTerms } = useQuery({
     queryKey: ["terms", selectedAcademicYear],
     queryFn: () => fetchTerms(Number(selectedAcademicYear)),
     enabled: !!selectedAcademicYear,
   });
 
-  // Fetch sequences based on selected term
-  const {
-    data: sequences,
-    isLoading: isLoadingSequences,
-    error: sequencesError,
-  } = useQuery({
+  const { data: sequences, isLoading: isLoadingSequences } = useQuery({
     queryKey: ["sequences", selectedTerm],
     queryFn: () => fetchSequences(Number(selectedTerm)),
     enabled: !!selectedTerm && timeScope === "sequence",
   });
 
-  // Fetch classes
-  const {
-    data: classesData,
-    isLoading: isLoadingClasses,
-    error: classesError,
-  } = useQuery<ClassesResponse>({
-    queryKey: ["classes"],
-    queryFn: fetchAllClasses,
-  });
+  const { data: classesData, isLoading: isLoadingClasses } =
+    useQuery<ClassesResponse>({
+      queryKey: ["classes"],
+      queryFn: fetchAllClasses,
+    });
 
-  // Get periodId based on the selected timeScope
   const getPeriodId = () => {
     switch (timeScope) {
       case "sequence":
@@ -112,7 +97,25 @@ const AnalyticsComponent = () => {
     }
   };
 
-  // Fetch analytics data based on selected tab and filters
+  // --- CORRECTED/IMPROVED LOGIC FOR ENABLING THE MAIN QUERY ---
+  const isPeriodSelected =
+    (timeScope === "year" && !!selectedAcademicYear) ||
+    (timeScope === "term" && !!selectedTerm) ||
+    (timeScope === "sequence" && !!selectedSequence);
+
+  const isQueryEnabled = () => {
+    // Base requirement for all tabs is a selected period.
+    if (!isPeriodSelected) return false;
+
+    // The 'Class' tab has an additional requirement: a selected class.
+    if (selectedTab === "class") {
+      return !!selectedClass;
+    }
+
+    // All other tabs are ready if a period is selected.
+    return true;
+  };
+
   const {
     data: analyticsData,
     isLoading: isLoadingAnalytics,
@@ -124,6 +127,9 @@ const AnalyticsComponent = () => {
       timeScope,
       getPeriodId(),
       selectedClass,
+      selectedTab === "subjects" ? debouncedSubjectFilter : "",
+      selectedTab === "subjects" ? sortField : "",
+      selectedTab === "subjects" ? sortDirection : "",
     ],
     queryFn: () => {
       const options = {
@@ -136,7 +142,12 @@ const AnalyticsComponent = () => {
         case "school":
           return fetchSchoolPerformance(options);
         case "subjects":
-          return fetchSchoolSubjectAnalysis(options);
+          return fetchSchoolSubjectAnalysis({
+            ...options,
+            subjectQuery: debouncedSubjectFilter,
+            sortBy: sortField,
+            sortDirection: sortDirection,
+          });
         case "classes":
           return fetchSchoolClassComparison(options);
         case "class":
@@ -145,12 +156,11 @@ const AnalyticsComponent = () => {
           return Promise.reject("Invalid tab selected");
       }
     },
-    enabled:
-      (timeScope === "year" && !!selectedAcademicYear) ||
-      (timeScope === "term" && !!selectedTerm) ||
-      (timeScope === "sequence" && !!selectedSequence) ||
-      (selectedTab === "class" && !!selectedClass),
+    // --- THIS IS THE KEY FIX ---
+    enabled: isQueryEnabled(),
   });
+
+  // --- End of Data Fetching ---
 
   // Load saved selections from localStorage on initial render
   useEffect(() => {
@@ -160,7 +170,6 @@ const AnalyticsComponent = () => {
         if (savedSelections) {
           const { academicYear, term, sequence, classId, tab, scope } =
             JSON.parse(savedSelections);
-
           if (academicYear) setSelectedAcademicYear(academicYear);
           if (term) setSelectedTerm(term);
           if (sequence) setSelectedSequence(sequence);
@@ -231,37 +240,26 @@ const AnalyticsComponent = () => {
   const getSelectedTimeScopeName = () => {
     switch (timeScope) {
       case "sequence":
-        if (!sequences) return "";
-        const selectedSeq = sequences.find(
-          (seq) => seq.id.toString() === selectedSequence
-        );
-        return selectedSeq ? selectedSeq.name : "";
+        return sequences?.find((seq) => seq.id.toString() === selectedSequence)
+          ?.name;
       case "term":
-        if (!terms) return "";
-        const selectedTermObj = terms.find(
-          (term) => term.id.toString() === selectedTerm
-        );
-        return selectedTermObj ? selectedTermObj.name : "";
+        return terms?.find((term) => term.id.toString() === selectedTerm)?.name;
       case "year":
-        if (!academicYears) return "";
-        const selectedYearObj = academicYears.find(
+        return academicYears?.find(
           (year) => year.id.toString() === selectedAcademicYear
-        );
-        return selectedYearObj ? selectedYearObj.name : "";
+        )?.name;
       default:
         return "";
     }
   };
 
   const getSelectedClassName = () => {
-    if (!classesData) return "";
-    const selectedClassObj = classesData.find(
-      (cls) => cls.id.toString() === selectedClass
+    return (
+      classesData?.find((cls) => cls.id.toString() === selectedClass)
+        ?.full_name || ""
     );
-    return selectedClassObj ? selectedClassObj.full_name : "";
   };
 
-  // Reset filters function
   const resetFilters = () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem("analyticsPageSelections");
@@ -278,18 +276,33 @@ const AnalyticsComponent = () => {
     setSelectedClass("");
     setSelectedTab("school");
     setTimeScope("term");
+    setSubjectFilter("");
   };
 
-  const isAllFiltersSelected = () => {
-    if (timeScope === "sequence") {
-      return !!selectedSequence;
-    } else if (timeScope === "term") {
-      return !!selectedTerm;
-    } else if (timeScope === "year") {
-      return !!selectedAcademicYear;
+  const getNoDataMessage = () => {
+    if (!isPeriodSelected) {
+      return {
+        title: t("selectFilters"),
+        subtitle: t("pleaseSelect", {
+          filterType:
+            timeScope === "sequence"
+              ? t("sequence")
+              : timeScope === "term"
+                ? t("term")
+                : t("academicYear"),
+        }),
+      };
     }
-    return false;
+    if (selectedTab === "class" && !selectedClass) {
+      return {
+        title: t("selectClassTitle"),
+        subtitle: t("selectClassSubtitle"),
+      };
+    }
+    return null;
   };
+
+  const noDataMessage = getNoDataMessage();
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -302,19 +315,11 @@ const AnalyticsComponent = () => {
               <p className="mt-1 opacity-90 font-light">
                 {getSelectedTimeScopeName()
                   ? t("subtitle", {
-                      timeScope: timeScope,
+                      timeScope: t(timeScope),
                       timeScopeName: getSelectedTimeScopeName(),
                     })
                   : t("noFilters")}
               </p>
-            </div>
-
-            {/* Action buttons */}
-            <div className="mt-4 md:mt-0 flex space-x-3">
-              <Button className="bg-white text-primary hover:bg-white/90">
-                <Download className="h-4 w-4 mr-2" />
-                {t("export")}
-              </Button>
             </div>
           </div>
 
@@ -382,13 +387,7 @@ const AnalyticsComponent = () => {
           )}
           {getSelectedTimeScopeName() && (
             <Badge className="bg-gray-100 hover:bg-gray-200 text-gray-800 border-0 py-1.5 pl-2 pr-3">
-              {timeScope === "sequence" ? (
-                <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-primary/80" />
-              ) : timeScope === "term" ? (
-                <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-primary/80" />
-              ) : (
-                <Calendar className="h-3.5 w-3.5 mr-1.5 text-primary/80" />
-              )}
+              <Calendar className="h-3.5 w-3.5 mr-1.5 text-primary/80" />
               {getSelectedTimeScopeName()}
             </Badge>
           )}
@@ -639,19 +638,12 @@ const AnalyticsComponent = () => {
               {t("loadingAnalytics")}
             </span>
           </div>
-        ) : !isAllFiltersSelected() ? (
+        ) : noDataMessage ? (
           <div className="p-12 flex items-center justify-center text-gray-500">
             <div className="text-center">
-              <p className="text-lg font-medium">{t("selectFilters")}</p>
+              <p className="text-lg font-medium">{noDataMessage.title}</p>
               <p className="text-sm text-gray-400 mt-2">
-                {t("pleaseSelect", {
-                  filterType:
-                    timeScope === "sequence"
-                      ? t("sequence")
-                      : timeScope === "term"
-                      ? t("term")
-                      : t("academicYear"),
-                })}
+                {noDataMessage.subtitle}
               </p>
             </div>
           </div>
@@ -665,11 +657,20 @@ const AnalyticsComponent = () => {
         ) : (
           <div className="p-6">
             {selectedTab === "school" && (
-              <SchoolOverview data={analyticsData} />
+              <SchoolOverview data={analyticsData} timeScope={undefined} />
             )}
             {selectedTab === "class" && <ClassDetails data={analyticsData} />}
             {selectedTab === "subjects" && (
-              <SubjectAnalysis data={analyticsData} />
+              <SubjectAnalysis
+                data={analyticsData}
+                isLoading={isLoadingAnalytics}
+                subjectFilter={subjectFilter}
+                setSubjectFilter={setSubjectFilter}
+                sortField={sortField}
+                sortDirection={sortDirection}
+                setSortField={setSortField}
+                setSortDirection={setSortDirection}
+              />
             )}
             {selectedTab === "classes" && (
               <ClassComparisonView data={analyticsData} />

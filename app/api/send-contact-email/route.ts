@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
     // The `from` email address MUST be on that verified domain.
     // Example: if your verified domain is `yourcompany.com`,
     // you can use `from: 'Contact Form <noreply@yourcompany.com>'`
-    // or `from: 'KamerSchools Contact <contact@kamerschools.example.cm>'`
-    // (assuming `kamerschools.example.cm` is YOUR verified domain)
+    // or `from: 'KamerSchools Contact <contact@KamerSchool.example.cm>'`
+    // (assuming `KamerSchool.example.cm` is YOUR verified domain)
 
     // The `to` address is where you want to receive the contact form submissions.
     const toEmail =

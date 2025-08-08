@@ -2,10 +2,34 @@ import React from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Edit } from "lucide-react";
-import { AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useRouter } from "@/i18n/routing";
 
-const TeacherHeader = ({ teacherData, onGoBack, schoolData }) => {
+interface TeacherData {
+  id: string;
+  name: string;
+  email: string;
+  phone_number?: string;
+  picture?: string;
+}
+
+interface SchoolData {
+  name: string;
+}
+
+interface TeacherHeaderProps {
+  teacherData: TeacherData;
+  onGoBack: () => void;
+  schoolData?: SchoolData;
+  canEdit: boolean;
+}
+
+const TeacherHeader: React.FC<TeacherHeaderProps> = ({
+  teacherData,
+  onGoBack,
+  schoolData,
+  canEdit,
+}) => {
   const t = useTranslations("Teachers");
   const router = useRouter();
 
@@ -36,17 +60,16 @@ const TeacherHeader = ({ teacherData, onGoBack, schoolData }) => {
           </Button>
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
             <div className="flex items-center">
-              <div className="mr-4 h-14 w-14 rounded-lg bg-primary/10 flex items-center justify-center">
-                {teacherData.picture ? (
+              <div className="mr-4">
+                <Avatar className="h-14 w-14">
                   <AvatarImage
                     src={teacherData.picture}
                     alt={teacherData.name}
                   />
-                ) : (
-                  <span className="text-primary font-bold">
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold">
                     {getInitials(teacherData.name)}
-                  </span>
-                )}
+                  </AvatarFallback>
+                </Avatar>
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
@@ -66,7 +89,11 @@ const TeacherHeader = ({ teacherData, onGoBack, schoolData }) => {
               </div>
             </div>
             <div className="flex gap-3">
-              <Button onClick={handleEditTeacher} className="gap-2">
+              <Button
+                onClick={handleEditTeacher}
+                className="gap-2"
+                disabled={!canEdit}
+              >
                 <Edit className="h-4 w-4" />
                 {t("editTeacher")}
               </Button>

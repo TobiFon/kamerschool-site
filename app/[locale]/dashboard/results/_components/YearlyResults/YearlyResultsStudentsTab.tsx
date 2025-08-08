@@ -52,6 +52,7 @@ import { managePromotionRules } from "@/queries/promotions";
 import { createPromotionDecisions } from "@/queries/promotions";
 import { toast } from "sonner";
 import ManualPromotionDecisionDialog from "./ManualDecision";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const YearlyResultsStudentsTab = ({
   filteredResults,
@@ -95,6 +96,7 @@ const YearlyResultsStudentsTab = ({
       queryFn: () => managePromotionRules(),
     }
   );
+  const { canEdit } = useCurrentUser();
 
   // find if a matching promotion rule exists for this class
   const existingPromotionRule = promotionRules?.find(
@@ -243,31 +245,41 @@ const YearlyResultsStudentsTab = ({
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center">
+                <Button
+                  variant="outline"
+                  className="flex items-center"
+                  disabled={!canEdit}
+                >
                   <Eye className="mr-2 h-4 w-4 text-green-500" />
                   {t("publishActions")}
                   <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => handlePublishOverall(true)}>
+                <DropdownMenuItem
+                  onClick={() => handlePublishOverall(true)}
+                  disabled={!canEdit}
+                >
                   <Check className="mr-2 h-4 w-4 text-green-500" />
                   {t("publishAll")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handlePublishOverall(false)}>
+                <DropdownMenuItem
+                  onClick={() => handlePublishOverall(false)}
+                  disabled={!canEdit}
+                >
                   <Ban className="mr-2 h-4 w-4 text-red-500" />
                   {t("unpublishAll")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handlePublishSelected(true)}
-                  disabled={selectedStudentIds.length === 0}
+                  disabled={selectedStudentIds.length === 0 || !canEdit}
                 >
                   <Check className="mr-2 h-4 w-4 text-green-500" />
                   {t("publishSelected")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handlePublishSelected(false)}
-                  disabled={selectedStudentIds.length === 0}
+                  disabled={selectedStudentIds.length === 0 || !canEdit}
                 >
                   <Ban className="mr-2 h-4 w-4 text-red-500" />
                   {t("unpublishSelected")}
@@ -280,6 +292,7 @@ const YearlyResultsStudentsTab = ({
               variant="outline"
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-1"
+              disabled={!canEdit}
             >
               <Settings className="h-5 w-5 text-purple-500" />
               {t("managePromotionRules")}
@@ -295,7 +308,8 @@ const YearlyResultsStudentsTab = ({
                     disabled={
                       isPromotionRulesLoading ||
                       !existingPromotionRule ||
-                      createPromotionDecisionsMutation.isLoading
+                      createPromotionDecisionsMutation.isLoading ||
+                      !canEdit
                     }
                     className="flex items-center gap-1"
                   >
@@ -316,6 +330,7 @@ const YearlyResultsStudentsTab = ({
               variant="outline"
               onClick={() => setIsManualPromotionDialogOpen(true)}
               className="flex items-center gap-1"
+              disabled={!canEdit}
             >
               <Edit className="h-5 w-5 text-indigo-500" />
               {t("manualPromotionDecisions")}
@@ -662,6 +677,7 @@ const YearlyResultsStudentsTab = ({
                               <Button
                                 variant="outline"
                                 size="sm"
+                                disabled={!canEdit}
                                 onClick={() =>
                                   handlePublishSelected(!result.is_published, [
                                     result.student_id,

@@ -15,6 +15,7 @@ interface TeacherSubjectsHeaderProps {
   t: (key: string) => string;
   router: ReturnType<typeof useRouter>;
   assignedCount: number;
+  canEdit: boolean;
 }
 
 const TeacherSubjectsHeader: React.FC<TeacherSubjectsHeaderProps> = ({
@@ -26,6 +27,7 @@ const TeacherSubjectsHeader: React.FC<TeacherSubjectsHeaderProps> = ({
   t,
   router,
   assignedCount,
+  canEdit,
 }) => {
   return (
     <div className="mb-6">
@@ -59,7 +61,7 @@ const TeacherSubjectsHeader: React.FC<TeacherSubjectsHeaderProps> = ({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={isLoading || !hasPendingChanges}
+            disabled={isLoading || !hasPendingChanges || !canEdit}
           >
             {isLoading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

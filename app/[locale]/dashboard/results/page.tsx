@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   Loader2,
   CalendarDays,
@@ -9,12 +9,25 @@ import {
   School,
   Filter,
   Calendar,
-  Plus,
-  Download,
-  Users,
+  PlusCircle,
+  HardDriveDownload,
+  Settings,
+  Bell,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { useRouter } from "@/i18n/routing";
+
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -27,6 +40,8 @@ import {
   fetchAcademicYears,
   fetchTerms,
   fetchSequences,
+  createBulkReportJob,
+  BulkJobPayload,
 } from "@/queries/results";
 import { fetchAllClasses } from "@/queries/class";
 import { ClassesResponse } from "@/types/class";
@@ -35,9 +50,16 @@ import SequenceResultsTab from "./_components/SequenceTab";
 import SequenceModal from "./_components/CreateSequenceModal";
 import TermResultsTab from "./_components/TermResultsComponents/TermResultsTab";
 import YearlyResultsTab from "./_components/YearlyResults/YearlyResultsTab";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import ExportsSheetContent from "./_components/ExportSheetContent";
 
 const ResultsComponent: React.FC = () => {
   const t = useTranslations("Results");
+  const tBulk = useTranslations("BulkExport");
+  const tActions = useTranslations("Actions");
+  const router = useRouter();
+  const { canEdit } = useCurrentUser();
+
   const [selectedAcademicYear, setSelectedAcademicYear] = useState<string>("");
   const [selectedTerm, setSelectedTerm] = useState<string>("");
   const [selectedClass, setSelectedClass] = useState<string>("");
@@ -51,48 +73,56 @@ const ResultsComponent: React.FC = () => {
   });
 
   // Fetch academic years
-  const {
-    data: academicYears,
-    isLoading: isLoadingYears,
-    error: yearsError,
-  } = useQuery({
+  const { data: academicYears, isLoading: isLoadingYears } = useQuery({
     queryKey: ["academicYears"],
     queryFn: fetchAcademicYears,
   });
 
   // Fetch terms based on selected academic year
-  const {
-    data: terms,
-    isLoading: isLoadingTerms,
-    error: termsError,
-  } = useQuery({
+  const { data: terms, isLoading: isLoadingTerms } = useQuery({
     queryKey: ["terms", selectedAcademicYear],
     queryFn: () => fetchTerms(Number(selectedAcademicYear)),
     enabled: !!selectedAcademicYear,
   });
 
   // Fetch classes
-  const {
-    data: classesData,
-    isLoading: isLoadingClasses,
-    error: classesError,
-  } = useQuery<ClassesResponse>({
-    queryKey: ["classes"],
-    queryFn: fetchAllClasses,
-  });
+  const { data: classesData, isLoading: isLoadingClasses } =
+    useQuery<ClassesResponse>({
+      queryKey: ["classes"],
+      queryFn: fetchAllClasses,
+    });
 
   // Fetch sequences based on selected term
-  const {
-    data: sequences,
-    isLoading: isLoadingSequences,
-    error: sequencesError,
-  } = useQuery({
+  const { data: sequences, isLoading: isLoadingSequences } = useQuery({
     queryKey: ["sequences", selectedTerm],
     queryFn: () => fetchSequences(Number(selectedTerm)),
     enabled: !!selectedTerm,
   });
 
-  // Load saved selections from localStorage on initial render
+  // Mutation for starting the bulk export job
+  const bulkExportMutation = useMutation({
+    mutationFn: (payload: BulkJobPayload) => createBulkReportJob(payload),
+    onSuccess: (data) => {
+      toast.success(tBulk("jobStartedSuccess"), {
+        description: tBulk("jobStartedDescription", { jobId: data.id }),
+        action: {
+          label: tBulk("trackProgress"),
+          onClick: () => {
+            // This would now open the Sheet, but a toast action can't directly do that.
+            // The user is guided to click the Bell icon.
+            // A more advanced solution could involve global state management.
+          },
+        },
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(tBulk("jobStartFailed"), {
+        description: error.message,
+      });
+    },
+  });
+
+  // --- State and Data Management Hooks ---
   useEffect(() => {
     if (typeof window !== "undefined") {
       try {
@@ -100,8 +130,6 @@ const ResultsComponent: React.FC = () => {
         if (savedSelections) {
           const { academicYear, term, classId, tab, sequence } =
             JSON.parse(savedSelections);
-
-          // Set the values from localStorage
           if (academicYear) setSelectedAcademicYear(academicYear);
           if (term) setSelectedTerm(term);
           if (classId) setSelectedClass(classId);
@@ -110,24 +138,21 @@ const ResultsComponent: React.FC = () => {
         }
       } catch (error) {
         console.error("Error loading saved selections:", error);
-        // If there's an error, fall back to defaults
       }
     }
   }, []);
 
-  // Save selections to localStorage whenever they change
   useEffect(() => {
     if (typeof window !== "undefined" && selectedAcademicYear) {
-      const selectionsToSave = {
-        academicYear: selectedAcademicYear,
-        term: selectedTerm,
-        classId: selectedClass,
-        tab: selectedTab,
-        sequence: selectedSequence,
-      };
       localStorage.setItem(
         "resultsPageSelections",
-        JSON.stringify(selectionsToSave)
+        JSON.stringify({
+          academicYear: selectedAcademicYear,
+          term: selectedTerm,
+          classId: selectedClass,
+          tab: selectedTab,
+          sequence: selectedSequence,
+        })
       );
     }
   }, [
@@ -138,7 +163,6 @@ const ResultsComponent: React.FC = () => {
     selectedSequence,
   ]);
 
-  // Set defaults when data is loaded (only if no saved selections exist)
   useEffect(() => {
     if (academicYears?.length && !selectedAcademicYear) {
       const currentYear =
@@ -160,91 +184,45 @@ const ResultsComponent: React.FC = () => {
     }
   }, [classesData, selectedClass]);
 
-  // Updated logic to select the last sequence when term changes
-  // Only set if no sequence is already selected for this term
   useEffect(() => {
     if (
       sequences?.length &&
       !sequences.find((seq) => seq.id.toString() === selectedSequence)
     ) {
-      const termObject = terms?.find(
-        (term) => term.id.toString() === selectedTerm
-      );
-
-      if (termObject?.is_active) {
-        // If active term, select first sequence as default
-        setSelectedSequence(sequences[0].id.toString());
-      } else {
-        // If not active term, select last sequence
-        setSelectedSequence(sequences[sequences.length - 1].id.toString());
-      }
+      setSelectedSequence(sequences[sequences.length - 1].id.toString());
     }
-  }, [sequences, selectedTerm, terms, selectedSequence]);
+  }, [sequences, selectedTerm, selectedSequence]);
 
-  const getActiveTermName = () => {
-    if (!terms) return "";
-    const activeTerm = terms.find((term) => term.is_active);
-    return activeTerm ? activeTerm.name : "";
-  };
-
-  const getActiveYearName = () => {
-    if (!academicYears) return "";
-    const activeYear = academicYears.find((year) => year.is_active);
-    return activeYear ? activeYear.name : "";
-  };
-
-  const getSelectedTermName = () => {
-    if (!terms) return "";
-    const selectedTermObj = terms.find(
-      (term) => term.id.toString() === selectedTerm
-    );
-    return selectedTermObj ? selectedTermObj.name : "";
-  };
-
-  const getSelectedSequenceName = () => {
-    if (!sequences) return "";
-    const selectedSeq = sequences.find(
-      (seq) => seq.id.toString() === selectedSequence
-    );
-    return selectedSeq ? selectedSeq.name : "";
-  };
-
-  const getSelectedClassName = () => {
-    if (!classesData) return "";
-    const selectedClassObj = classesData.find(
-      (cls) => cls.id.toString() === selectedClass
-    );
-    return selectedClassObj ? selectedClassObj.full_name : "";
-  };
-  const getSelectedClassLevel = () => {
-    if (!classesData) return "";
-    const selectedClassObj = classesData.find(
-      (cls) => cls.id.toString() === selectedClass
-    );
-    return selectedClassObj ? selectedClassObj.level : "";
-  };
-  const getSelectedClassEducationSystem = () => {
-    if (!classesData) return "";
-    const selectedClassObj = classesData.find(
-      (cls) => cls.id.toString() === selectedClass
-    );
-    return selectedClassObj ? selectedClassObj.education_system : "";
-  };
+  // --- Helper Functions ---
+  const getSelectedTermName = () =>
+    terms?.find((t) => t.id.toString() === selectedTerm)?.name || "";
+  const getSelectedAcademicYearName = () =>
+    academicYears?.find((y) => y.id.toString() === selectedAcademicYear)
+      ?.name || "";
+  const getSelectedSequenceName = () =>
+    sequences?.find((s) => s.id.toString() === selectedSequence)?.name || "";
+  const getSelectedClassName = () =>
+    classesData?.find((c) => c.id.toString() === selectedClass)?.full_name ||
+    "";
+  const getSelectedClassLevel = () =>
+    classesData?.find((c) => c.id.toString() === selectedClass)?.level || "";
+  const getSelectedClassEducationSystem = () =>
+    classesData?.find((c) => c.id.toString() === selectedClass)
+      ?.education_system || "";
 
   const openCreateSequenceModal = ({ currentTerm, eligibleTerms }) => {
     setModalData({
       currentTerm,
       eligibleTerms: eligibleTerms || [],
-      selectedSequence: null, // null means creating new sequence
+      selectedSequence: null,
     });
     setIsSequenceModalOpen(true);
   };
 
   const openEditSequenceModal = (sequenceId) => {
     const sequenceToEdit = sequences?.find(
-      (seq) => seq.id.toString() === sequenceId
+      (s) => s.id.toString() === sequenceId
     );
-
     if (sequenceToEdit) {
       setModalData({
         currentTerm: selectedTerm,
@@ -256,109 +234,127 @@ const ResultsComponent: React.FC = () => {
   };
 
   const isAllFiltersSelected = () => {
-    if (selectedTab === "sequence") {
+    if (selectedTab === "sequence")
       return (
         !!selectedAcademicYear &&
         !!selectedTerm &&
         !!selectedClass &&
         !!selectedSequence
       );
-    } else if (selectedTab === "term") {
+    if (selectedTab === "term")
       return !!selectedAcademicYear && !!selectedTerm && !!selectedClass;
-    } else {
-      return !!selectedAcademicYear && !!selectedClass;
-    }
+    return !!selectedAcademicYear && !!selectedClass;
   };
 
-  // Reset filters function
-  const resetFilters = () => {
-    // Clear localStorage
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("resultsPageSelections");
+  const handleBulkExport = () => {
+    if (!isAllFiltersSelected()) {
+      toast.error(tBulk("selectionRequired"));
+      return;
     }
-
-    // Reset to default selections
-    if (academicYears?.length) {
-      const currentYear =
-        academicYears.find((year) => year.is_active) || academicYears[0];
-      setSelectedAcademicYear(currentYear.id.toString());
-    } else {
-      setSelectedAcademicYear("");
-    }
-
-    setSelectedTerm("");
-    setSelectedClass("");
-    setSelectedSequence("");
-    setSelectedTab("sequence");
+    const payload: BulkJobPayload = {
+      school_class: selectedClass,
+      academic_year: selectedAcademicYear,
+      term:
+        selectedTab === "term" || selectedTab === "sequence"
+          ? selectedTerm
+          : null,
+      sequence: selectedTab === "sequence" ? selectedSequence : null,
+    };
+    bulkExportMutation.mutate(payload);
   };
 
   return (
     <div className="container mx-auto px-4 py-6">
-      {/* Modern Header with gradient */}
       <div className="bg-gradient-to-r from-primary/90 to-primary rounded-xl shadow-lg mb-6 overflow-hidden">
         <div className="p-6 text-white">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div>
               <h1 className="text-2xl font-bold">{t("resultsTitle")}</h1>
               <p className="mt-1 opacity-90 font-light">
-                {getActiveYearName() && getActiveTermName()
-                  ? `${getActiveYearName()} · ${getSelectedTermName()}`
-                  : t("selectFilters")}
+                {getSelectedAcademicYearName()}
               </p>
             </div>
 
-            {/* Action buttons */}
-            <div className="mt-4 md:mt-0 flex space-x-3">
-              {selectedTab === "sequence" && (
-                <Button
-                  onClick={() =>
-                    openCreateSequenceModal({
-                      currentTerm: selectedTerm,
-                      eligibleTerms: terms,
-                    })
-                  }
-                  className="bg-white/20 text-white hover:bg-white/30"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t("createSequence")}
-                </Button>
-              )}
+            <div className="mt-4 md:mt-0 flex items-center space-x-2">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="text-white hover:bg-white/20 p-2 h-auto relative"
+                  >
+                    <Bell className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="w-[400px] sm:w-[540px] p-0">
+                  <ExportsSheetContent />
+                </SheetContent>
+              </Sheet>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="bg-white/10 text-white hover:bg-white/20"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    {tActions("title")}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    {tActions("resultsActions")}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleBulkExport}
+                    disabled={
+                      !isAllFiltersSelected() || bulkExportMutation.isLoading
+                    }
+                  >
+                    {bulkExportMutation.isLoading ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <HardDriveDownload className="mr-2 h-4 w-4" />
+                    )}
+                    <span>{tBulk("generateButtonText")}</span>
+                  </DropdownMenuItem>
+                  {selectedTab === "sequence" && (
+                    <DropdownMenuItem
+                      disabled={!canEdit}
+                      onClick={() =>
+                        openCreateSequenceModal({
+                          currentTerm: selectedTerm,
+                          eligibleTerms: terms,
+                        })
+                      }
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      <span>{t("createSequence")}</span>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
-          {/* View type tabs */}
           <div className="inline-flex bg-white/10 backdrop-blur-sm rounded-lg p-1 text-sm font-medium">
             <button
               onClick={() => setSelectedTab("sequence")}
-              className={`flex items-center px-4 py-2 rounded-md transition-all ${
-                selectedTab === "sequence"
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-white hover:bg-white/10"
-              }`}
+              className={`flex items-center px-4 py-2 rounded-md transition-all ${selectedTab === "sequence" ? "bg-white text-primary shadow-sm" : "text-white hover:bg-white/10"}`}
             >
               <ClipboardList className="h-4 w-4 mr-2" />
               {t("sequenceResults")}
             </button>
-
             <button
               onClick={() => setSelectedTab("term")}
-              className={`flex items-center px-4 py-2 rounded-md transition-all ${
-                selectedTab === "term"
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-white hover:bg-white/10"
-              }`}
+              className={`flex items-center px-4 py-2 rounded-md transition-all ${selectedTab === "term" ? "bg-white text-primary shadow-sm" : "text-white hover:bg-white/10"}`}
             >
               <CalendarDays className="h-4 w-4 mr-2" />
               {t("termResults")}
             </button>
-
             <button
               onClick={() => setSelectedTab("yearly")}
-              className={`flex items-center px-4 py-2 rounded-md transition-all ${
-                selectedTab === "yearly"
-                  ? "bg-white text-primary shadow-sm"
-                  : "text-white hover:bg-white/10"
-              }`}
+              className={`flex items-center px-4 py-2 rounded-md transition-all ${selectedTab === "yearly" ? "bg-white text-primary shadow-sm" : "text-white hover:bg-white/10"}`}
             >
               <GraduationCap className="h-4 w-4 mr-2" />
               {t("yearlyResults")}
@@ -367,7 +363,6 @@ const ResultsComponent: React.FC = () => {
         </div>
       </div>
 
-      {/* Context badges - showing current selections */}
       {(selectedClass || selectedSequence) && (
         <div className="flex flex-wrap gap-2 mb-4">
           {selectedClass && (
@@ -382,7 +377,7 @@ const ResultsComponent: React.FC = () => {
               {getSelectedSequenceName()}
             </Badge>
           )}
-          {selectedTerm && (
+          {selectedTerm && selectedTab !== "yearly" && (
             <Badge className="bg-gray-100 hover:bg-gray-200 text-gray-800 border-0 py-1.5 pl-2 pr-3">
               <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-primary/80" />
               {getSelectedTermName()}
@@ -391,27 +386,15 @@ const ResultsComponent: React.FC = () => {
         </div>
       )}
 
-      {/* Filters Card - Hierarchical organization */}
       <Card className="mb-6 shadow-md border-0 overflow-hidden bg-white">
         <CardContent className="p-0">
           <div className="p-4 border-b border-gray-100 bg-gray-50 flex items-center">
             <Filter className="h-5 w-5 text-gray-500 mr-2" />
             <span className="font-medium text-gray-700">{t("filters")}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-auto text-xs h-8 text-gray-500 hover:text-gray-700"
-              onClick={resetFilters}
-            >
-              {t("resetFilters")}
-            </Button>
           </div>
-
           <div className="p-5">
             <div className="space-y-5">
-              {/* Time period selection (Academic Year > Term) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Academic Year */}
                 <div className="space-y-2">
                   <label
                     htmlFor="academic-year"
@@ -454,53 +437,51 @@ const ResultsComponent: React.FC = () => {
                     </SelectContent>
                   </Select>
                 </div>
-
-                {/* Term */}
-                <div className="space-y-2">
-                  <label
-                    htmlFor="term"
-                    className="text-sm font-medium text-gray-700 flex items-center"
-                  >
-                    <CalendarDays className="h-4 w-4 mr-2 text-primary/80" />
-                    {t("term")}
-                  </label>
-                  <Select
-                    value={selectedTerm}
-                    onValueChange={setSelectedTerm}
-                    disabled={isLoadingTerms || !selectedAcademicYear}
-                  >
-                    <SelectTrigger
-                      id="term"
-                      className="w-full bg-white border-gray-200 h-10 shadow-sm hover:border-primary/50 transition-colors"
+                {selectedTab !== "yearly" && (
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="term"
+                      className="text-sm font-medium text-gray-700 flex items-center"
                     >
-                      {isLoadingTerms ? (
-                        <div className="flex items-center">
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          {t("loading")}
-                        </div>
-                      ) : (
-                        <SelectValue placeholder={t("selectTerm")} />
-                      )}
-                    </SelectTrigger>
-                    <SelectContent className="bg-white border-gray-200 shadow-lg">
-                      {terms?.map((term) => (
-                        <SelectItem key={term.id} value={term.id.toString()}>
-                          <div className="flex items-center justify-between w-full">
-                            <span>{term.name}</span>
-                            {term.is_active && (
-                              <Badge className="ml-2 bg-green-100 text-green-800 text-xs">
-                                {t("current")}
-                              </Badge>
-                            )}
+                      <CalendarDays className="h-4 w-4 mr-2 text-primary/80" />
+                      {t("term")}
+                    </label>
+                    <Select
+                      value={selectedTerm}
+                      onValueChange={setSelectedTerm}
+                      disabled={isLoadingTerms || !selectedAcademicYear}
+                    >
+                      <SelectTrigger
+                        id="term"
+                        className="w-full bg-white border-gray-200 h-10 shadow-sm hover:border-primary/50 transition-colors"
+                      >
+                        {isLoadingTerms ? (
+                          <div className="flex items-center">
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            {t("loading")}
                           </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                        ) : (
+                          <SelectValue placeholder={t("selectTerm")} />
+                        )}
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border-gray-200 shadow-lg">
+                        {terms?.map((term) => (
+                          <SelectItem key={term.id} value={term.id.toString()}>
+                            <div className="flex items-center justify-between w-full">
+                              <span>{term.name}</span>
+                              {term.is_active && (
+                                <Badge className="ml-2 bg-green-100 text-green-800 text-xs">
+                                  {t("current")}
+                                </Badge>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
-
-              {/* Sequence - Only shown when sequence tab is selected */}
               {selectedTab === "sequence" && (
                 <div className="border-t border-gray-100 pt-5">
                   <div className="space-y-2">
@@ -515,6 +496,7 @@ const ResultsComponent: React.FC = () => {
                       {selectedSequence && (
                         <Button
                           variant="ghost"
+                          disabled={!canEdit}
                           size="sm"
                           className="text-xs h-7 text-primary hover:bg-primary/10"
                           onClick={() =>
@@ -557,8 +539,6 @@ const ResultsComponent: React.FC = () => {
                   </div>
                 </div>
               )}
-
-              {/* Class selection */}
               <div className="border-t border-gray-100 pt-5">
                 <div className="space-y-2">
                   <label
@@ -592,13 +572,7 @@ const ResultsComponent: React.FC = () => {
                           key={classItem.id}
                           value={classItem.id.toString()}
                         >
-                          <div className="flex flex-col">
-                            <span>{classItem.full_name}</span>
-                            <span className="text-xs text-gray-500">
-                              {classItem.mandatory_subjects?.length || 0}{" "}
-                              {t("subjects")}
-                            </span>
-                          </div>
+                          {classItem.full_name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -618,30 +592,33 @@ const ResultsComponent: React.FC = () => {
         />
       )}
 
-      {/* Content Area */}
       <div className="bg-white rounded-lg shadow-md border-0 overflow-hidden min-h-80">
-        {selectedTab === "sequence" && selectedSequence && selectedClass ? (
-          <SequenceResultsTab
-            sequenceId={selectedSequence}
-            classId={selectedClass}
-            sequenceName={getSelectedSequenceName()}
-          />
-        ) : selectedTab === "term" && selectedTerm && selectedClass ? (
-          <TermResultsTab
-            termId={selectedTerm}
-            classId={selectedClass}
-            termName={getSelectedTermName()}
-          />
-        ) : selectedTab === "yearly" &&
-          selectedAcademicYear &&
-          selectedClass ? (
-          <YearlyResultsTab
-            classId={selectedClass}
-            academicYearId={selectedAcademicYear}
-            academicYearName={getActiveYearName()}
-            classLevel={getSelectedClassLevel()}
-            classEducationSystem={getSelectedClassEducationSystem()}
-          />
+        {isAllFiltersSelected() ? (
+          <>
+            {selectedTab === "sequence" && (
+              <SequenceResultsTab
+                sequenceId={selectedSequence}
+                classId={selectedClass}
+                sequenceName={getSelectedSequenceName()}
+              />
+            )}
+            {selectedTab === "term" && (
+              <TermResultsTab
+                termId={selectedTerm}
+                classId={selectedClass}
+                termName={getSelectedTermName()}
+              />
+            )}
+            {selectedTab === "yearly" && (
+              <YearlyResultsTab
+                classId={selectedClass}
+                academicYearId={selectedAcademicYear}
+                academicYearName={getSelectedAcademicYearName()}
+                classLevel={getSelectedClassLevel()}
+                classEducationSystem={getSelectedClassEducationSystem()}
+              />
+            )}
+          </>
         ) : (
           <div className="p-12 flex items-center justify-center text-gray-500">
             <div className="text-center">

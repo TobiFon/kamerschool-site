@@ -1,5 +1,4 @@
 import type { Viewport } from "next";
-import { Inter } from "next/font/google";
 import { notFound } from "next/navigation";
 
 // i18n imports

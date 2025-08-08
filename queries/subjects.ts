@@ -1,6 +1,7 @@
 // queries/subjectPerformance.ts
 import { authFetch } from "@/lib/auth";
 import { SubjectPerformance } from "@/types/subjects";
+import { Subject } from "./admin";
 
 export async function fetchSubjectPerformance(): Promise<SubjectPerformance[]> {
   const res = await authFetch(
@@ -20,6 +21,24 @@ export async function fetchSubjects(): Promise<any> {
   return res.json();
 }
 
+export async function fetchUnpaginatedSubjects(params: {
+  education_system: string;
+  school_level: string;
+}): Promise<Subject[]> {
+  const query = new URLSearchParams(params);
+
+  // Call the new dedicated URL
+  const res = await authFetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/subjects/unpaginated/?${query.toString()}`
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch subjects for class");
+  }
+
+  // This endpoint returns a simple array
+  return res.json();
+}
 export async function bulkCreateClassSubjects(
   classId: number,
   payload: any

@@ -10,11 +10,23 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Icons } from "./icons";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { logout } from "@/lib/auth";
 import { useMemo, useState } from "react";
+import { Logo } from "./Logo";
 
 interface MenuItem {
   title: string;
@@ -93,6 +105,7 @@ export function AppSidebar() {
       await logout();
       router.push("/login");
     } finally {
+      // If logout fails, we want the user to be able to try again.
       setIsLoggingOut(false);
     }
   }
@@ -100,9 +113,8 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="flex items-baseline gap-2 px-2">
-          <Icons.coloredLogo className="w-8 h-8" />
-          <h3 className="text-xl font-bold">KamerSchools</h3>
+        <div className="px-2">
+          <Logo link={"/dashboard"} />
         </div>
       </SidebarHeader>
 
@@ -137,19 +149,34 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t">
-        <button
-          onClick={logoutUser}
-          disabled={isLoggingOut}
-          className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded transition-colors"
-          aria-label={t("logout")}
-        >
-          {isLoggingOut ? (
-            <Icons.spinner className="w-4 h-4 animate-spin" />
-          ) : (
-            <Icons.logout className="w-4 h-4" />
-          )}
-          <span>{t("logout")}</span>
-        </button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <button
+              className="flex items-center gap-3 w-full p-2 text-sm hover:bg-accent rounded transition-colors"
+              aria-label={t("logout")}
+            >
+              <Icons.logout className="w-4 h-4" />
+              <span>{t("logout")}</span>
+            </button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t("confirmLogoutTitle")}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {t("confirmLogoutDescription")}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={logoutUser} disabled={isLoggingOut}>
+                {isLoggingOut && (
+                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                {t("logout")}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarFooter>
     </Sidebar>
   );

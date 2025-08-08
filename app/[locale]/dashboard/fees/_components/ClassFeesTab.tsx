@@ -1,5 +1,3 @@
-// src/app/[locale]/dashboard/finance/_components/tabs/ClassFeesTab.tsx
-
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
@@ -19,6 +17,7 @@ import { fetchClassFees, deleteClassFee, fetchFeeTypes } from "@/queries/fees";
 import { fetchAcademicYears } from "@/queries/results";
 import { fetchAllClasses } from "@/queries/class";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { ClassFeeColumns } from "./ClassFeeColumn";
 import LoadingErrorState from "./LoadingErrorState";
 import { FilterControls } from "./FilterControls";
@@ -26,7 +25,6 @@ import { ClassFeeDataTable } from "./ClassFeeDataTable";
 import AddEditClassFeeDialog from "./AddEditClassFeeDailog";
 import AssignFeesDialog from "./AssignFeeType";
 import ConfirmationDialog from "./ConfirmDailogue";
-// Corrected path
 
 interface ClassFeesTabProps {
   school: School;
@@ -38,11 +36,12 @@ const ClassFeesTab: React.FC<ClassFeesTabProps> = ({ school }) => {
   const t = useTranslations("Finance");
   const tc = useTranslations("Common");
   const queryClient = useQueryClient();
+  const { canEdit } = useCurrentUser(); // Get user permission status
 
   const locale = "fr-CM";
   const currency = "XAF";
 
-  // --- State --- (Keep state management as is)
+  // --- State ---
   const [filters, setFilters] = useState({
     search: "",
     academic_year: undefined as number | undefined,
@@ -57,7 +56,7 @@ const ClassFeesTab: React.FC<ClassFeesTabProps> = ({ school }) => {
     null
   );
 
-  // --- Data Fetching --- (Keep data fetching as is)
+  // --- Data Fetching ---
   const queryParams = useMemo(
     () => ({
       search: filters.search || undefined,
@@ -94,7 +93,7 @@ const ClassFeesTab: React.FC<ClassFeesTabProps> = ({ school }) => {
   });
   const feeTypes = feeTypesPaginated?.results ?? [];
 
-  // --- Mutations --- (Keep mutations as is)
+  // --- Mutations ---
   const deleteMutation = useMutation({
     mutationFn: (id: number) => deleteClassFee(id),
     onSuccess: () => {
@@ -112,7 +111,7 @@ const ClassFeesTab: React.FC<ClassFeesTabProps> = ({ school }) => {
     },
   });
 
-  // --- Action Handlers --- (Keep handlers as is)
+  // --- Action Handlers ---
   const handleAdd = useCallback(() => {
     setSelectedClassFee(null);
     setAddEditDialogOpen(true);
@@ -135,18 +134,15 @@ const ClassFeesTab: React.FC<ClassFeesTabProps> = ({ school }) => {
     }
   }, [selectedClassFee, deleteMutation]);
 
-  // --- *** MODIFIED SECTION: Column Definition *** ---
+  // --- Column Definition ---
   const tableColumns = useMemo(() => {
-    // Create the labels object using the translators
     const labels = {
-      // Common labels
       yesLabel: tc("yes"),
       noLabel: tc("no"),
       openMenuLabel: tc("openMenu"),
       actionsLabel: tc("actions"),
       editLabel: tc("edit"),
       deleteLabel: tc("delete"),
-      // Finance specific labels
       assignFeesLabel: t("assignFees"),
       academicYearHeader: t("academicYear"),
       classHeader: t("class"),
@@ -157,18 +153,27 @@ const ClassFeesTab: React.FC<ClassFeesTabProps> = ({ school }) => {
       maxNumHeader: t("maxNum"),
     };
 
-    // Pass the labels object instead of t/tc functions
     return ClassFeeColumns({
-      labels: labels, // Pass the created labels object
+      labels: labels,
       onEdit: handleEdit,
       onAssign: handleAssign,
       onDelete: handleDelete,
       currency,
       locale,
+      canEdit: canEdit, // Pass permission status to columns
     });
-  }, [t, tc, handleEdit, handleAssign, handleDelete, currency, locale]); // Keep dependencies for t, tc, and handlers
+  }, [
+    t,
+    tc,
+    handleEdit,
+    handleAssign,
+    handleDelete,
+    currency,
+    locale,
+    canEdit,
+  ]); // Added canEdit to dependency array
 
-  // --- Filter Configuration --- (Keep filter config as is)
+  // --- Filter Configuration ---
   const filterConfig = useMemo(
     () => [
       {
@@ -205,7 +210,7 @@ const ClassFeesTab: React.FC<ClassFeesTabProps> = ({ school }) => {
     [t, tc, academicYears, classes, feeTypes]
   );
 
-  // --- Pagination Calculation --- (Keep pagination as is)
+  // --- Pagination Calculation ---
   const totalPages = data?.count
     ? Math.ceil(data.count / DEFAULT_PAGE_SIZE)
     : 1;
@@ -219,7 +224,7 @@ const ClassFeesTab: React.FC<ClassFeesTabProps> = ({ school }) => {
     [filters.page, totalPages, data?.next, data?.previous]
   );
 
-  // --- Render Logic --- (Keep render logic as is)
+  // --- Render Logic ---
   if (isLoading && filters.page === 1) {
     return <LoadingErrorState isLoading={true} />;
   }
@@ -240,6 +245,7 @@ const ClassFeesTab: React.FC<ClassFeesTabProps> = ({ school }) => {
           onClick={handleAdd}
           size="sm"
           className="ml-auto flex-shrink-0 mt-6"
+          disabled={!canEdit} // Disable button if user cannot edit
         >
           <PlusCircle className="mr-2 h-4 w-4" />
           {t("addClassFee")}

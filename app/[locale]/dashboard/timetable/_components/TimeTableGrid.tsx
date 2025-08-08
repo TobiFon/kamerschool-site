@@ -1,8 +1,8 @@
-// src/components/Timetable/Editor/TimeTableGrid.tsx
+"use client";
 
 import React from "react";
 import { useTranslations } from "next-intl";
-import { Clock, Trash2, Plus, Settings2, XCircle, Edit3 } from "lucide-react"; // Added Edit3
+import { Clock, Trash2, Plus, Edit3, XCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,8 +20,7 @@ import {
   ScheduledClassSubject,
 } from "@/types/timetable";
 
-// Define days of the week (consistent with backend: 0=Monday)
-const DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5]; // Monday to Saturday (Adjust if Sunday needed)
+const DAYS_OF_WEEK = [0, 1, 2, 3, 4, 5];
 const DAY_KEYS = [
   "monday",
   "tuesday",
@@ -29,29 +28,23 @@ const DAY_KEYS = [
   "thursday",
   "friday",
   "saturday",
-  "sunday",
 ];
 
 interface TimetableGridProps {
-  timeSlots: TimeSlot[]; // Schedulable time slots (breaks excluded by parent)
-  entries: TimetableEntry[]; // These are the "slots" from the timetable data
+  timeSlots: TimeSlot[];
+  entries: TimetableEntry[];
   isLoading: boolean;
+  canEdit: boolean; // Prop to receive permission status
 
-  // Called when any cell is clicked (empty or main area of occupied)
   onCellClick: (
     dayOfWeek: number,
     timeSlotId: number,
     existingSlot: TimetableEntry | undefined
   ) => void;
-
-  // Called to delete a specific ScheduledClassSubject from a slot
   onDeleteScheduledSubject: (scheduledSubject: ScheduledClassSubject) => void;
-
-  // Called to delete an entire TimetableEntry (slot) and all its scheduled subjects
   onDeleteEntireSlot: (slot: TimetableEntry) => void;
 }
 
-// Helper to find a TimetableEntry (slot) for a given day and timeSlotId
 const findSlotEntry = (
   entries: TimetableEntry[],
   dayOfWeek: number,
@@ -67,6 +60,7 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
   timeSlots,
   entries,
   isLoading,
+  canEdit, // Receive the permission status
   onCellClick,
   onDeleteScheduledSubject,
   onDeleteEntireSlot,
@@ -75,10 +69,9 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
   const tDays = useTranslations("Days");
   const tCommon = useTranslations("Common");
 
-  // --- Skeleton Loading State ---
   if (isLoading) {
     const SKELETON_DAYS = 6;
-    const SKELETON_PERIODS = Math.max(timeSlots.length, 5); // Use actual slot length or default
+    const SKELETON_PERIODS = Math.max(timeSlots.length, 5);
     return (
       <div className="border rounded-lg overflow-hidden shadow-md">
         <div
@@ -108,7 +101,7 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
                 (_, periodIndex) => (
                   <div
                     key={`skel-cell-${dayIndex}-${periodIndex}`}
-                    className="p-1.5 border-b border-r min-h-[120px]" // Increased min-height for content
+                    className="p-1.5 border-b border-r min-h-[120px]"
                   >
                     <Skeleton className="h-full w-full rounded" />
                   </div>
@@ -121,7 +114,6 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
     );
   }
 
-  // --- Empty State (No Time Slots Configured) ---
   if (timeSlots.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground border rounded-lg bg-muted/30 shadow-sm">
@@ -132,9 +124,8 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
     );
   }
 
-  // --- Grid Render ---
   const dayColumnWidth = "minmax(110px, auto)";
-  const periodColumnWidth = "minmax(180px, 1fr)"; // Allow space for multiple subjects
+  const periodColumnWidth = "minmax(180px, 1fr)";
 
   return (
     <TooltipProvider delayDuration={100}>
@@ -143,10 +134,9 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
           className="grid"
           style={{
             gridTemplateColumns: `${dayColumnWidth} repeat(${timeSlots.length}, ${periodColumnWidth})`,
-            minWidth: `${110 + timeSlots.length * 180}px`, // Ensure min width for scrollability
+            minWidth: `${110 + timeSlots.length * 180}px`,
           }}
         >
-          {/* Header Row: Corner + Period Names */}
           <div className="p-2.5 border-b border-r text-xs font-semibold uppercase tracking-wider text-muted-foreground bg-muted/70 sticky top-0 left-0 z-30 flex items-center justify-center"></div>
           {timeSlots.map((slot) => (
             <div
@@ -165,15 +155,12 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
             </div>
           ))}
 
-          {/* Grid Body: Day Name + Cells */}
           {DAYS_OF_WEEK.map((day) => (
             <React.Fragment key={`row-${day}`}>
-              {/* Day Name Header Cell */}
               <div className="p-2.5 border-b border-r font-semibold text-sm text-center bg-muted/70 sticky left-0 z-20 flex items-center justify-center">
                 {tDays(DAY_KEYS[day])}
               </div>
 
-              {/* Entry Cells for this Day */}
               {timeSlots.map((ts) => {
                 const slotEntry = findSlotEntry(entries, day, ts.id);
                 const cellKey = `cell-${day}-${ts.id}`;
@@ -183,30 +170,36 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
                     key={cellKey}
                     className={cn(
                       "border-b border-r p-1.5 min-h-[120px] flex flex-col group relative transition-colors duration-150 ease-in-out",
-                      // Click on the cell background (not on buttons) opens the modal
-                      "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-card",
-                      !slotEntry && "hover:bg-primary/5",
-                      slotEntry && "hover:bg-muted/30" // Lighter hover for occupied cells
+                      canEdit &&
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-card",
+                      canEdit &&
+                        !slotEntry &&
+                        "hover:bg-primary/5 cursor-pointer",
+                      canEdit &&
+                        slotEntry &&
+                        "hover:bg-muted/30 cursor-pointer",
+                      !canEdit && "cursor-not-allowed bg-muted/20" // Visual cue for disabled cells
                     )}
-                    onClick={() => onCellClick(day, ts.id, slotEntry)}
-                    tabIndex={0} // Make it focusable
+                    onClick={
+                      canEdit
+                        ? () => onCellClick(day, ts.id, slotEntry)
+                        : undefined
+                    }
+                    tabIndex={canEdit ? 0 : -1}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
+                      if (canEdit && (e.key === "Enter" || e.key === " ")) {
                         onCellClick(day, ts.id, slotEntry);
                       }
                     }}
                   >
                     {slotEntry ? (
-                      // --- Cell with an existing Slot (TimetableEntry) ---
                       <div className="flex-grow flex flex-col justify-between h-full">
-                        {/* List of scheduled subjects - Scrollable */}
                         <div className="space-y-1 flex-grow overflow-y-auto max-h-[75px] mb-1 custom-scrollbar pr-1">
                           {slotEntry.scheduled_subjects.length > 0 ? (
                             slotEntry.scheduled_subjects.map((ss) => (
                               <div
                                 key={ss.id}
                                 className="bg-card border text-xs rounded p-1.5 shadow-sm group/item relative"
-                                // Prevent item click from triggering cell click (which opens modal)
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <p
@@ -223,17 +216,17 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
                                     T: {ss.class_subject.teacher.name}
                                   </p>
                                 )}
-                                {/* Delete button for this specific scheduled subject */}
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Button
                                       variant="ghost"
-                                      size="icon-xs" // Custom small size
+                                      size="icon-xs"
                                       className="h-5 w-5 text-destructive hover:bg-destructive/10 absolute top-0.5 right-0.5 opacity-0 group-hover/item:opacity-100 focus-within:opacity-100"
                                       onClick={() =>
                                         onDeleteScheduledSubject(ss)
                                       }
                                       title={tGrid("removeSubjectTooltip")}
+                                      disabled={!canEdit}
                                     >
                                       <Trash2 className="h-3 w-3" />
                                       <span className="sr-only">
@@ -251,16 +244,12 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
                               </div>
                             ))
                           ) : (
-                            // Slot exists but no subjects scheduled
                             <div className="flex items-center justify-center h-full text-xs text-muted-foreground italic px-2 text-center">
                               {tGrid("emptySlotManage")}
                             </div>
                           )}
                         </div>
-
-                        {/* Slot-level actions (notes, delete slot) */}
                         <div className="mt-auto pt-1 border-t border-dashed border-border/30 flex justify-between items-center gap-1">
-                          {/* Slot Notes (Tooltip) */}
                           {slotEntry.notes && (
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -282,7 +271,6 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
                             </Tooltip>
                           )}
                           <div className="flex-shrink-0 ml-auto">
-                            {/* Edit Slot Button (same as clicking cell background) - Visual cue */}
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -290,11 +278,13 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
                                   size="icon-xs"
                                   className="h-6 w-6 text-blue-600 hover:bg-blue-600/10"
                                   onClick={(e) => {
-                                    // Explicitly call onCellClick
-                                    e.stopPropagation();
-                                    onCellClick(day, ts.id, slotEntry);
+                                    if (canEdit) {
+                                      e.stopPropagation();
+                                      onCellClick(day, ts.id, slotEntry);
+                                    }
                                   }}
                                   title={tGrid("manageSlotTooltip")}
+                                  disabled={!canEdit}
                                 >
                                   <Edit3 className="h-3.5 w-3.5" />
                                   <span className="sr-only">
@@ -309,7 +299,6 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
                                 <p>{tGrid("manageSlotTooltip")}</p>
                               </TooltipContent>
                             </Tooltip>
-                            {/* Delete Entire Slot Button */}
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button
@@ -317,10 +306,13 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
                                   size="icon-xs"
                                   className="h-6 w-6 text-destructive hover:bg-destructive/10"
                                   onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteEntireSlot(slotEntry);
+                                    if (canEdit) {
+                                      e.stopPropagation();
+                                      onDeleteEntireSlot(slotEntry);
+                                    }
                                   }}
                                   title={tGrid("deleteSlotTooltip")}
+                                  disabled={!canEdit}
                                 >
                                   <XCircle className="h-3.5 w-3.5" />
                                   <span className="sr-only">
@@ -339,9 +331,10 @@ const TimetableGrid: React.FC<TimetableGridProps> = ({
                         </div>
                       </div>
                     ) : (
-                      // --- Cell is truly empty (no TimetableEntry) ---
                       <div className="flex-grow w-full h-full flex items-center justify-center text-muted-foreground/50 rounded transition-all duration-150 ease-in-out">
-                        <Plus className="h-5 w-5 opacity-30 group-hover:opacity-100 group-focus-visible:opacity-100 transform group-hover:scale-110 transition-all duration-150" />
+                        {canEdit && (
+                          <Plus className="h-5 w-5 opacity-30 group-hover:opacity-100 group-focus-visible:opacity-100 transform group-hover:scale-110 transition-all duration-150" />
+                        )}
                       </div>
                     )}
                   </div>

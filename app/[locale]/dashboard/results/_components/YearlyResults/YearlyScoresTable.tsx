@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface YearlyScoresTableProps {
   processedResults: any[];
@@ -27,7 +28,7 @@ const YearlyScoresTable: React.FC<YearlyScoresTableProps> = ({
   onToggle,
 }) => {
   const t = useTranslations("Results");
-
+  const { canEdit } = useCurrentUser();
   return (
     <div className="rounded-lg border overflow-hidden">
       <div className="overflow-x-auto">
@@ -119,8 +120,8 @@ const YearlyScoresTable: React.FC<YearlyScoresTableProps> = ({
                         avgScore >= 15
                           ? "bg-green-100"
                           : avgScore >= 10
-                          ? "bg-blue-100"
-                          : "bg-red-100"
+                            ? "bg-blue-100"
+                            : "bg-red-100"
                       }`}
                     >
                       {result.average_score}/20
@@ -154,6 +155,7 @@ const YearlyScoresTable: React.FC<YearlyScoresTableProps> = ({
                       variant="outline"
                       size="sm"
                       onClick={() => onToggle(result.student_id)}
+                      disabled={!canEdit}
                     >
                       {result.is_published ? t("unpublish") : t("publish")}
                     </Button>

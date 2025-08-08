@@ -105,7 +105,6 @@ const classFormSchema = z.object({
   level: z.string().min(1, { message: "Level is required" }),
   stream: z.string().nullable().optional(),
   section: z.string().nullable().optional(),
-  sub_stream: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
 });
 
@@ -126,7 +125,6 @@ export default function ClassForm() {
       level: "",
       stream: null,
       section: null,
-      sub_stream: null,
       description: "",
     },
     mode: "onChange",
@@ -137,19 +135,17 @@ export default function ClassForm() {
   const watchLevel = form.watch("level");
   const watchStream = form.watch("stream");
   const watchSection = form.watch("section");
-  const watchSubStream = form.watch("sub_stream");
   const watchDescription = form.watch("description");
 
   // Update form progress
   React.useEffect(() => {
     let completedFields = 0;
-    let totalFields = 5; // Count required and optional fields
+    let totalFields = 4; // Count required and optional fields
 
     if (watchEducationSystem) completedFields++;
     if (watchLevel) completedFields++;
     if (watchStream) completedFields++;
     if (watchSection) completedFields++;
-    if (watchSubStream) completedFields++;
     if (watchDescription) completedFields += 0.5; // Half weight for description
 
     setFormProgress(Math.min((completedFields / totalFields) * 100, 100));
@@ -158,7 +154,6 @@ export default function ClassForm() {
     watchLevel,
     watchStream,
     watchSection,
-    watchSubStream,
     watchDescription,
   ]);
 
@@ -221,21 +216,6 @@ export default function ClassForm() {
     return false;
   };
 
-  // Determine if sub-stream is required
-  const isSubStreamRequired = (): boolean => {
-    const selectedSystem = educationSystems.find(
-      (sys) => sys.id === watchEducationSystem
-    );
-    if (!selectedSystem || !watchLevel) return false;
-
-    // Only required for Sixth Forms in English system
-    if (selectedSystem.code.startsWith("en")) {
-      return ["lower_sixth", "upper_sixth"].includes(watchLevel);
-    }
-
-    return false;
-  };
-
   // Handle custom stream input
   const handleCustomStreamChange = (value: string) => {
     setCustomStream(value);
@@ -289,14 +269,6 @@ export default function ClassForm() {
       return;
     }
 
-    if (isSubStreamRequired() && !data.sub_stream) {
-      form.setError("sub_stream", { message: t("subStreamRequired") });
-      toast.error(t("formError"), {
-        description: t("subStreamRequiredDesc"),
-      });
-      return;
-    }
-
     mutation.mutate(data);
   };
 
@@ -327,10 +299,10 @@ export default function ClassForm() {
               {formProgress < 50
                 ? t("gettingStarted")
                 : formProgress < 80
-                ? t("almostThere")
-                : formProgress === 100
-                ? t("readyToSubmit")
-                : t("inProgress")}
+                  ? t("almostThere")
+                  : formProgress === 100
+                    ? t("readyToSubmit")
+                    : t("inProgress")}
             </Badge>
           </div>
 
@@ -532,42 +504,6 @@ export default function ClassForm() {
                         />
                       </FormControl>
                       <FormDescription>{t("sectionHelp")}</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid gap-6 md:grid-cols-2">
-                {/* Sub Stream */}
-                <FormField
-                  control={form.control}
-                  name="sub_stream"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="font-medium flex items-center gap-2">
-                        {t("subStream")}
-                        {isSubStreamRequired() && (
-                          <span className="text-red-500">*</span>
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          onChange={(e) =>
-                            field.onChange(e.target.value || null)
-                          }
-                          placeholder={t("enterSubStream")}
-                          disabled={mutation.isPending}
-                          className={`bg-white border hover:border-primary/80 transition-colors ${
-                            isSubStreamRequired()
-                              ? "border-amber-400"
-                              : "border-gray-300"
-                          }`}
-                        />
-                      </FormControl>
-                      <FormDescription>{t("subStreamHelp")}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

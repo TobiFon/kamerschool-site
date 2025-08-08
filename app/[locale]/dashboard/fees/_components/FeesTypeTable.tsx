@@ -14,6 +14,7 @@ import LoadingErrorState from "./LoadingErrorState";
 import { FeeTypeDataTable } from "./FeetypeDataTables";
 import AddEditFeeTypeDialog from "./AddEditFeeTypeDailog";
 import ConfirmationDialog from "./ConfirmDailogue";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const FeeTypesTab: React.FC = () => {
   const t = useTranslations("Finance");
@@ -25,6 +26,7 @@ const FeeTypesTab: React.FC = () => {
   const [isDeleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedFeeType, setSelectedFeeType] = useState<FeeType | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const { canEdit } = useCurrentUser();
 
   // Fetch Data (backend handles school scoping)
   // Assuming fetchFeeTypes returns PaginatedResponse based on usage and query signature correction
@@ -85,8 +87,9 @@ const FeeTypesTab: React.FC = () => {
         t: tc, // Use common translations for actions
         onEdit: handleEditClick,
         onDelete: handleDeleteClick,
+        canEdit: canEdit, // Pass canEdit permission down to columns
       }),
-    [tc, handleEditClick, handleDeleteClick] // Dependencies
+    [tc, handleEditClick, handleDeleteClick, canEdit] // Add canEdit to dependency array
   );
 
   // --- Render Logic ---
@@ -114,9 +117,12 @@ const FeeTypesTab: React.FC = () => {
             className="h-9"
           />
         </div>
-        <Button onClick={handleAddClick} size="sm" className="gap-1">
-          {" "}
-          {/* Use size sm */}
+        <Button
+          onClick={handleAddClick}
+          size="sm"
+          className="gap-1"
+          disabled={!canEdit}
+        >
           <PlusCircle className="h-4 w-4" />
           {t("addFeeType")}
         </Button>

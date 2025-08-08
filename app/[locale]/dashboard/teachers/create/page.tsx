@@ -43,6 +43,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
 import { authFetch } from "@/lib/auth";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Validation schema - Updated to match backend requirements
 const teacherFormSchema = z.object({
@@ -71,6 +72,7 @@ export default function TeacherForm() {
   const [formProgress, setFormProgress] = useState(0);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { canEdit } = useCurrentUser(); // Get user permission status
 
   // Setup form with validation
   const form = useForm<TeacherFormValues>({
@@ -215,10 +217,10 @@ export default function TeacherForm() {
               {formProgress < 50
                 ? t("gettingStarted")
                 : formProgress < 80
-                ? t("almostThere")
-                : formProgress === 100
-                ? t("readyToSubmit")
-                : t("inProgress")}
+                  ? t("almostThere")
+                  : formProgress === 100
+                    ? t("readyToSubmit")
+                    : t("inProgress")}
             </Badge>
           </div>
 
@@ -371,7 +373,7 @@ export default function TeacherForm() {
                       type="button"
                       variant="outline"
                       onClick={triggerFileInput}
-                      disabled={mutation.isPending}
+                      disabled={mutation.isPending || !canEdit}
                       className="mb-2"
                     >
                       {imagePreview ? t("changePicture") : t("uploadPicture")}
@@ -395,7 +397,7 @@ export default function TeacherForm() {
               </Button>
               <Button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || !canEdit}
                 className="bg-gradient-to-r from-primary/80 to-primary hover:from-primary hover:to-indigo-700 text-white px-8 transition-all"
               >
                 {mutation.isPending ? (

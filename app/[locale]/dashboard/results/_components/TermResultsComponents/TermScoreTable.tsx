@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface TermScoresTableProps {
   processedResults: any[];
@@ -25,6 +26,7 @@ const TermScoresTable: React.FC<TermScoresTableProps> = ({
   onToggle,
 }) => {
   const t = useTranslations("Results");
+  const { canEdit } = useCurrentUser();
 
   return (
     <div className="rounded-lg border overflow-hidden">
@@ -117,8 +119,8 @@ const TermScoresTable: React.FC<TermScoresTableProps> = ({
                         avgScore >= 15
                           ? "bg-green-100"
                           : avgScore >= 10
-                          ? "bg-blue-100"
-                          : "bg-red-100"
+                            ? "bg-blue-100"
+                            : "bg-red-100"
                       }`}
                     >
                       {result.average_score}/20
@@ -150,6 +152,7 @@ const TermScoresTable: React.FC<TermScoresTableProps> = ({
                   <td className="p-4">
                     <Button
                       variant="outline"
+                      disabled={!canEdit}
                       size="sm"
                       onClick={() => onToggle(result.student_id)}
                     >

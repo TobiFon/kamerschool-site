@@ -83,10 +83,7 @@ export function ManageStaffTab() {
     mutationFn: inviteStaff,
     onSuccess: (data) => {
       toast.success(tCommon("success"), {
-        description: t("inviteDialog.success", {
-          username: data.username || "N/A",
-          password: data.temporary_password || "Check Email",
-        }),
+        description: t("inviteDialog.success"),
         duration: 10000, // Longer duration for credentials
       });
       invalidateStaffList();
@@ -124,9 +121,7 @@ export function ManageStaffTab() {
     mutationFn: resetStaffPassword,
     onSuccess: (data) => {
       toast.success(tCommon("success"), {
-        description: t("resetSuccess", {
-          password: data.temporary_password || "Check Email",
-        }),
+        description: t("resetSuccess"),
         duration: 10000,
       });
       invalidateStaffList();

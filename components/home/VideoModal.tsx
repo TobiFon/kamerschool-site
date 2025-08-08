@@ -315,7 +315,7 @@ const DashboardVideoDisplay = ({
                   src={mobileImagePath}
                   width={120} // Should match the largest width from className or transformation
                   height={Math.round(120 * (19.5 / 9))} // Calculate height based on aspect ratio
-                  alt="Mobile view of KamerSchools dashboard"
+                  alt="Mobile view of KamerSchool dashboard"
                   className="object-cover w-full h-full" // Ensure it fills the container
                   priority // As it's part of the hero section
                 />

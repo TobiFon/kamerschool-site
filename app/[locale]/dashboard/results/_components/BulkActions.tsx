@@ -3,6 +3,7 @@ import { useTranslations } from "next-intl";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface BulkActionsProps {
   selectedStudentIds: number[];
@@ -20,6 +21,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({
   onUnpublish,
 }) => {
   const t = useTranslations("Results");
+  const { canEdit } = useCurrentUser();
 
   return (
     <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
@@ -47,7 +49,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({
         <Button
           size="sm"
           variant="outline"
-          disabled={selectedStudentIds.length === 0}
+          disabled={selectedStudentIds.length === 0 || !canEdit}
           onClick={onPublish}
         >
           {t("publish")}
@@ -55,7 +57,7 @@ const BulkActions: React.FC<BulkActionsProps> = ({
         <Button
           size="sm"
           variant="outline"
-          disabled={selectedStudentIds.length === 0}
+          disabled={selectedStudentIds.length === 0 || !canEdit}
           onClick={onUnpublish}
         >
           {t("unpublish")}

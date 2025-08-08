@@ -18,13 +18,15 @@ import TeacherPerformanceTab from "./_components/TeacherPerformanceTab";
 import TeacherSubjectsTab from "./_components/TeacherSubjects";
 import TeacherTimetableTab from "./_components/TeachersTimetableTab";
 import { getBackendErrorMessage } from "@/lib/utils";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const TeacherDetailPage = () => {
   const t = useTranslations("Teachers");
   const router = useRouter();
   const params = useParams();
   const teacherId = params.id as string;
-  const [activeTab, setActiveTab] = useState("overview"); // Default tab
+  const [activeTab, setActiveTab] = useState("overview"); // Default
+  const { canEdit } = useCurrentUser();
 
   // Fetch teacher data
   const {
@@ -102,7 +104,8 @@ const TeacherDetailPage = () => {
       <TeacherHeader
         teacherData={teacherData}
         onGoBack={handleGoBack}
-        schoolData={schoolData} // Pass schoolData, it might be undefined if still loading or error
+        schoolData={schoolData}
+        canEdit={canEdit} // Pass schoolData, it might be undefined if still loading or error
       />
 
       <div className="container mx-auto px-4 mt-6">
@@ -158,7 +161,9 @@ const TeacherDetailPage = () => {
             value="subjects"
             className="focus-visible:outline-none focus-visible:ring-0"
           >
-            {teacherData && <TeacherSubjectsTab teacherData={teacherData} />}
+            {teacherData && (
+              <TeacherSubjectsTab teacherData={teacherData} canEdit={canEdit} />
+            )}
           </TabsContent>
 
           {/* New Timetable Tab Content */}

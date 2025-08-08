@@ -534,8 +534,8 @@ const DisciplineRecordModal: React.FC<DisciplineRecordModalProps> = ({
                             {isLoadingStudents
                               ? tCommon("loading")
                               : debouncedStudentSearchTerm.length < 2
-                              ? t("typeToSearch")
-                              : t("noStudentFound")}
+                                ? t("typeToSearch")
+                                : t("noStudentFound")}
                           </CommandEmpty>
                           <CommandGroup
                             heading={

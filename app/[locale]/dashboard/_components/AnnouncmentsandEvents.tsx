@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 export const EnhancedAnnouncements = ({
   announcementsData,
@@ -98,6 +99,7 @@ export const EnhancedCalendar = ({
 }) => {
   const t = useTranslations("calendar");
   const router = useRouter();
+  const { canEdit } = useCurrentUser();
 
   return (
     <Card className="overflow-hidden bg-white shadow-md rounded-xl border-0">
@@ -238,6 +240,7 @@ export const EnhancedCalendar = ({
 
             <Button
               variant="outline"
+              disabled={!canEdit}
               className="w-full mt-10 text-sm"
               onClick={() => router.push("/dashboard/calendar/create")}
             >

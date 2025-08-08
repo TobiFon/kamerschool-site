@@ -33,6 +33,7 @@ import YearlyResultsOverviewTab from "./YearlyResultsOverview";
 import YearlyResultsStudentsTab from "./YearlyResultsStudentsTab";
 import YearlySubjectsResultsTab from "./YearlySubjectTab";
 import { exportYearlyOverallResultsToPDF } from "@/lib/exportPdfs";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const YearlyResultsTab = ({
   academicYearId,
@@ -57,6 +58,7 @@ const YearlyResultsTab = ({
   const [calculationStep, setCalculationStep] = useState(0);
   const [calculationDialog, setCalculationDialog] = useState(false);
   const [calculationError, setCalculationError] = useState(null);
+  const { canEdit } = useCurrentUser(); // Assuming useCurrentUser is defined elsewhere
 
   // Check if yearly subject results exist
   const {
@@ -596,7 +598,7 @@ const YearlyResultsTab = ({
         <div className="mt-4 md:mt-0 flex items-center space-x-2">
           <Button
             onClick={handleCalculateResults}
-            disabled={isCalculating}
+            disabled={isCalculating || !canEdit}
             className="flex items-center"
             variant="default"
           >

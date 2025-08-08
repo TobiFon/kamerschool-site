@@ -12,12 +12,6 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // Add experimental features for better static generation
-  experimental: {
-    // This can help with context issues during static generation
-    staticWorkerRequestDeduping: true,
-  },
-
   // Configure output for better compatibility
   output: "standalone",
 

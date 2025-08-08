@@ -50,6 +50,7 @@ import { StudentOverview, EnrollmentHistoryEntry } from "@/types/students";
 import { fetchStudentOverview } from "@/queries/students";
 import { formatCurrency, formatDate, cn } from "@/lib/utils";
 import { getBackendErrorMessage } from "@/lib/utils";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // --- Reusable Stat Card ---
 interface StatCardProps {
@@ -147,6 +148,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ studentId }) => {
   const tStatus = useTranslations("Status");
   const tSubjects = useTranslations("Subjects");
   const tCommon = useTranslations("Common");
+  const { canEdit } = useCurrentUser();
 
   const [selectedAcademicYearId, setSelectedAcademicYearId] = useState<
     string | null
@@ -612,17 +614,17 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ studentId }) => {
                           .includes("promoted")
                           ? "text-success"
                           : latest_performance.promotion_status
-                              ?.toLowerCase()
-                              .includes("repeated") ||
-                            latest_performance.promotion_status
-                              ?.toLowerCase()
-                              .includes("fail")
-                          ? "text-destructive"
-                          : latest_performance.promotion_status
-                              ?.toLowerCase()
-                              .includes("pending")
-                          ? "text-yellow-600"
-                          : "text-muted-foreground"
+                                ?.toLowerCase()
+                                .includes("repeated") ||
+                              latest_performance.promotion_status
+                                ?.toLowerCase()
+                                .includes("fail")
+                            ? "text-destructive"
+                            : latest_performance.promotion_status
+                                  ?.toLowerCase()
+                                  .includes("pending")
+                              ? "text-yellow-600"
+                              : "text-muted-foreground"
                       )}
                     />
                   )}
@@ -682,8 +684,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ studentId }) => {
                       attendancePercentage > 80
                         ? "bg-success"
                         : attendancePercentage > 50
-                        ? "bg-yellow-500"
-                        : "bg-destructive"
+                          ? "bg-yellow-500"
+                          : "bg-destructive"
                     )}
                   />
                   <div className="grid grid-cols-2 gap-3 pt-2">
@@ -790,8 +792,8 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ studentId }) => {
                       paymentPercentage === 100
                         ? "bg-success"
                         : paymentPercentage > 60
-                        ? "bg-yellow-500"
-                        : "bg-destructive"
+                          ? "bg-yellow-500"
+                          : "bg-destructive"
                     )}
                   />
                   <div className="mt-4 space-y-3">
@@ -861,7 +863,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ studentId }) => {
                         size="sm"
                         className="h-7 px-2"
                         title={t("editStudentSubjects")}
-                        disabled={isFetching}
+                        disabled={isFetching || !canEdit}
                       >
                         <Edit className="h-3.5 w-3.5" />
                       </Button>

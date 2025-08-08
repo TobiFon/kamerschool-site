@@ -15,8 +15,8 @@ export async function generateMetadata({
   const t = await getTranslations({ locale, namespace: "Metadata.Dashboard" });
 
   return {
-    title: t("title"), // e.g., "Dashboard - Kamerschools" or "Tableau de Bord - Kamerschools"
-    description: t("description"), // e.g., "Manage your school operations with Kamerschools."
+    title: t("title"),
+    description: t("description"),
     robots: {
       index: false,
       follow: false,
@@ -39,9 +39,6 @@ export default function DashboardLayout({
         <AppSidebar />
         <main className="flex flex-1 flex-col w-full min-h-screen">
           <header className="w-full sticky top-0 z-50">
-            <div className="lg:hidden absolute top-4 left-4 z-20">
-              <SidebarTrigger />
-            </div>
             <TopBar />
           </header>
           <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">

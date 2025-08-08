@@ -1,10 +1,10 @@
-// src/components/Timetable/Editor/TimetableEditor.tsx
+"use client";
 
-import React, { useState, useCallback, useMemo } from "react"; // Keep existing imports
+import React, { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { X, Loader2, AlertCircle, RefreshCcw, Printer } from "lucide-react"; // Added Printer
+import { X, Loader2, AlertCircle, RefreshCcw, Printer } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   ClassTimetable,
-  TimeSlot, // Make sure this is imported if not already
+  TimeSlot,
   TimetableEntry,
   ScheduledClassSubject,
   TimetableEntryFormData,
@@ -26,7 +26,7 @@ import {
   MultiPeriodEntryFormData,
 } from "@/types/timetable";
 import { ClassSubject, Teacher } from "@/types/teachers";
-import { School } from "@/types/auth"; // For school data
+import { School } from "@/types/auth";
 
 import {
   fetchClassTimetableDetail,
@@ -41,33 +41,22 @@ import {
 import { fetchClassSubjects } from "@/queries/subjects";
 import { fetchTeachers } from "@/queries/teachers";
 import { getBackendErrorMessage } from "@/lib/utils";
-import { fetchSchool } from "@/lib/auth"; // To fetch school details
+import { fetchSchool } from "@/lib/auth";
+import { useCurrentUser } from "@/hooks/useCurrentUser"; // Import the hook
 
 import ConfirmationDialog from "../../fees/_components/ConfirmDailogue";
 import TimetableGrid from "./TimeTableGrid";
-import TimetableSlotEditModal from "./TimetableSlotEditModal"; // Ensure this is the correct new name
+import TimetableSlotEditModal from "./TimetableSlotEditModal";
 import {
   exportTimetableToPDF,
   PdfLabels,
   SchoolDataForPdf,
 } from "@/lib/timetablepdf";
-// import TimetableEntryModal from "./TimetableEntryModal"; // Old modal name, ensure using correct one
 
 interface TimetableEditorProps {
   timetableId: number;
   onClose: () => void;
 }
-
-// Constants from TimetableGrid for day mapping if needed by PDF labels
-const DAY_KEYS_PDF_EDITOR = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-];
 
 const TimetableEditor: React.FC<TimetableEditorProps> = ({
   timetableId,
@@ -78,12 +67,12 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
   const tDays = useTranslations("Days");
   const tGrid = useTranslations("Timetable.Grid");
   const queryClient = useQueryClient();
+  const { canEdit } = useCurrentUser(); // Get user permission status
 
-  // ... (Keep all existing useState, useMemo, useQuery, useMutation hooks) ...
   const [slotEditModalState, setSlotEditModalState] =
-    useState<SlotEditModalState | null>(null); // Assuming SlotEditModalState is defined
+    useState<SlotEditModalState | null>(null);
   const [deletionConfirmation, setDeletionConfirmation] =
-    useState<DeletionConfirmationState | null>(null); // Assuming DeletionConfirmationState is defined
+    useState<DeletionConfirmationState | null>(null);
 
   const timetableDetailQueryKey = useMemo(
     () => ["classTimetableDetail", timetableId],
@@ -110,20 +99,19 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
     staleTime: Infinity,
   });
 
-  const schoolIdForQueries = schoolApiData?.id; // Assuming schoolApiData has id
-
+  const schoolIdForQueries = schoolApiData?.id;
   const classId = timetableData?.school_class?.id;
 
   const { data: timeSlots = [], isLoading: isLoadingTimeSlots } = useQuery<
     TimeSlot[],
     Error
   >({
-    queryKey: ["timeSlots", schoolIdForQueries], // Use actual school ID
+    queryKey: ["timeSlots", schoolIdForQueries],
     queryFn: () =>
       fetchTimeSlots({
-        school_id: schoolIdForQueries, // Pass school_id
+        school_id: schoolIdForQueries,
         ordering: "order,start_time",
-        pageSize: 200, // Fetch all slots for the grid/pdf
+        pageSize: 200,
       }).then((res) => res.results),
     enabled: !!schoolIdForQueries,
     staleTime: 60 * 60 * 1000,
@@ -147,13 +135,12 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
       staleTime: 10 * 60 * 1000,
     });
 
-  // ... (Keep your existing mutation definitions: commonMutationOptions, createSlotMutation, etc.) ...
   const commonMutationOptions = (operationNameKey?: string) => ({
-    onSuccess: (data: any, variables: any, context: any) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: timetableDetailQueryKey });
       queryClient.invalidateQueries({ queryKey: ["classTimetables"] });
     },
-    onError: (error: Error, variables: any, context: any) => {
+    onError: (error: Error) => {
       const message = operationNameKey
         ? t("errorGenericOperationWithName", { operation: t(operationNameKey) })
         : t("errorGenericOperation");
@@ -168,8 +155,8 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
   >({
     mutationFn: createTimetableEntry,
     ...commonMutationOptions("opCreatingSlot"),
-    onSuccess: (createdSlot, vars, ctx) => {
-      commonMutationOptions().onSuccess(createdSlot, vars, ctx);
+    onSuccess: (createdSlot) => {
+      commonMutationOptions().onSuccess();
       toast.success(
         t("slotCreatedSuccess", { time: createdSlot.time_slot.name })
       );
@@ -183,8 +170,8 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
   >({
     mutationFn: createScheduledClassSubject,
     ...commonMutationOptions("opSchedulingSubject"),
-    onSuccess: (scheduledItem, vars, ctx) => {
-      commonMutationOptions().onSuccess(scheduledItem, vars, ctx);
+    onSuccess: (scheduledItem) => {
+      commonMutationOptions().onSuccess();
       toast.success(
         t("subjectScheduledSuccess", {
           subject: scheduledItem.class_subject.subject.name,
@@ -200,8 +187,8 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
   >({
     mutationFn: ({ id, data }) => updateTimetableEntry(id, data),
     ...commonMutationOptions("opUpdatingSlotNotes"),
-    onSuccess: (updatedSlot, vars, ctx) => {
-      commonMutationOptions().onSuccess(updatedSlot, vars, ctx);
+    onSuccess: (updatedSlot) => {
+      commonMutationOptions().onSuccess();
       toast.success(
         t("slotNotesUpdateSuccess", { time: updatedSlot.time_slot.name })
       );
@@ -211,13 +198,13 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
   const deleteSlotMutation = useMutation<void, Error, number>({
     mutationFn: deleteTimetableEntry,
     ...commonMutationOptions("opDeletingSlot"),
-    onSuccess: (data, vars, ctx) => {
-      commonMutationOptions().onSuccess(data, vars, ctx);
+    onSuccess: () => {
+      commonMutationOptions().onSuccess();
       toast.success(t("slotDeletedSuccess"));
       setDeletionConfirmation(null);
     },
-    onError: (e, vars, ctx) => {
-      commonMutationOptions("opDeletingSlot").onError?.(e, vars, ctx);
+    onError: (e) => {
+      commonMutationOptions("opDeletingSlot").onError?.(e);
       setDeletionConfirmation(null);
     },
   });
@@ -225,8 +212,8 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
   const unscheduleSubjectMutation = useMutation<void, Error, number>({
     mutationFn: deleteScheduledClassSubject,
     ...commonMutationOptions("opUnschedulingSubject"),
-    onSuccess: (data, vars, ctx) => {
-      commonMutationOptions().onSuccess(data, vars, ctx);
+    onSuccess: () => {
+      commonMutationOptions().onSuccess();
       toast.success(t("subjectUnscheduledSuccess"));
       if (
         deletionConfirmation?.targetType ===
@@ -235,8 +222,8 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
         setDeletionConfirmation(null);
       }
     },
-    onError: (e, vars, ctx) => {
-      commonMutationOptions("opUnschedulingSubject").onError?.(e, vars, ctx);
+    onError: (e) => {
+      commonMutationOptions("opUnschedulingSubject").onError?.(e);
       if (
         deletionConfirmation?.targetType ===
         DeletionTargetType.SCHEDULED_SUBJECT
@@ -253,8 +240,8 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
   >({
     mutationFn: createMultiPeriodTimetableEntries,
     ...commonMutationOptions("opCreatingMultiPeriod"),
-    onSuccess: (data, vars, ctx) => {
-      commonMutationOptions().onSuccess(data, vars, ctx);
+    onSuccess: (data) => {
+      commonMutationOptions().onSuccess();
       if (data?.length > 0)
         toast.success(
           t("multiEntryAddedSuccess", {
@@ -319,46 +306,30 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
   const handlePrintTimetable = () => {
     if (!timetableData || !timeSlots || !schoolApiData) {
       toast.error(t("errorPdfDataMissing"));
-      console.error("PDF Export Error: Missing critical data", {
-        timetableData,
-        timeSlots,
-        schoolApiData,
-      });
       return;
     }
-
-    // Filter out break slots for the main grid columns,
-    // but the PDF function itself will handle `is_break` for display.
-    // So, pass all fetched timeSlots that are ordered correctly.
     const schedulableTimeSlotsForPdf = timeSlots.sort(
       (a, b) => a.order - b.order || a.start_time.localeCompare(b.start_time)
     );
-
-    const schoolDataForPdf: SchoolDataForPdf = {
-      name: schoolApiData.name,
-    };
-
+    const schoolDataForPdf: SchoolDataForPdf = { name: schoolApiData.name };
     const labels: PdfLabels = {
       schoolNamePlaceholder: tCommon("schoolNamePlaceholder"),
       academicYearPrefix: t("pdfAcademicYearPrefix"),
       classTimetableForPrefix: t("pdfClassTimetableForPrefix"),
-      dayHeader: tGrid("dayHeader"), // Assuming this translates to "Day" or "Time"
+      dayHeader: tGrid("dayHeader"),
       breakTime: tGrid("breakTime"),
       pagePdf: (current, total) => tCommon("pagePdf", { current, total }),
       generatedOn: (date) => tCommon("generatedOn", { date }),
       pdfFileNamePrefix: t("pdfFileNamePrefix"),
       days: {
-        // Ensure your DAY_KEYS_PDF_EDITOR aligns with how tDays works
         0: tDays(DAY_KEYS_PDF_EDITOR[0]),
         1: tDays(DAY_KEYS_PDF_EDITOR[1]),
         2: tDays(DAY_KEYS_PDF_EDITOR[2]),
         3: tDays(DAY_KEYS_PDF_EDITOR[3]),
         4: tDays(DAY_KEYS_PDF_EDITOR[4]),
         5: tDays(DAY_KEYS_PDF_EDITOR[5]),
-        // Add 6 for Sunday if used
       },
     };
-
     exportTimetableToPDF(
       timetableData,
       schedulableTimeSlotsForPdf,
@@ -373,7 +344,6 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
     "thursday",
     "friday",
     "saturday",
-    "sunday",
   ];
 
   const isLoadingPrimaryData = isLoadingTimetable || isLoadingTimeSlots;
@@ -383,7 +353,6 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
     isLoadingPrimaryData || (!!timetableData && isLoadingSupportingData);
 
   if (isLoadingPrimaryData && !timetableData) {
-    // ... (keep existing skeleton for loading primary data) ...
     return (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -391,15 +360,14 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
           <Skeleton className="h-8 w-16" />
         </CardHeader>
         <CardContent className="mt-4 space-y-6">
-          <Skeleton className="h-12 w-full" /> {/* Placeholder for controls */}
-          <Skeleton className="h-96 w-full" /> {/* Placeholder for grid */}
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-96 w-full" />
         </CardContent>
       </Card>
     );
   }
 
   if (isErrorTimetable) {
-    // ... (keep existing error display) ...
     return (
       <Card className="bg-destructive/5 border-destructive">
         <CardHeader className="flex flex-row items-center justify-between">
@@ -433,7 +401,6 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
     );
   }
   if (!timetableData) {
-    // ... (keep existing 'timetable not found' display) ...
     return (
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
@@ -449,7 +416,6 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
     );
   }
 
-  // ... (keep isMutating definition) ...
   const isMutating =
     createSlotMutation.isLoading ||
     scheduleSubjectInSlotMutation.isLoading ||
@@ -499,8 +465,6 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
         </div>
       </CardHeader>
       <CardContent className="pt-4">
-        {/* Placeholder for TimetableControls if you have one */}
-        {/* <TimetableControls ... /> */}
         <div className="mt-2">
           <TimetableGrid
             timeSlots={timeSlots}
@@ -509,11 +473,13 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
             onCellClick={handleCellClick}
             onDeleteScheduledSubject={handleDeleteScheduledSubject}
             onDeleteEntireSlot={handleDeleteEntireSlot}
+            canEdit={canEdit} // Pass permission status down
           />
         </div>
       </CardContent>
 
-      {slotEditModalState && (
+      {/* The modal is only triggered by actions inside the grid, which are now disabled for non-editors */}
+      {slotEditModalState && canEdit && (
         <TimetableSlotEditModal
           isOpen={!!slotEditModalState}
           onClose={handleCloseSlotEditModal}
@@ -531,11 +497,8 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
         />
       )}
 
-      {/* Definition for SlotEditModalState and DeletionTargetType/DeletionConfirmationState should be here or imported */}
-      {/* enum DeletionTargetType { SLOT = "slot", SCHEDULED_SUBJECT = "scheduled_subject" } etc. */}
-
       <ConfirmationDialog
-        isOpen={!!deletionConfirmation}
+        isOpen={!!deletionConfirmation && canEdit}
         onClose={() => setDeletionConfirmation(null)}
         onConfirm={() => {
           if (deletionConfirmation) {
@@ -579,8 +542,6 @@ const TimetableEditor: React.FC<TimetableEditorProps> = ({
   );
 };
 
-// Define these interfaces/enums if they are local to this file, or ensure they are imported
-// Example definitions (place them outside the component or in a types file):
 enum DeletionTargetType {
   SLOT = "slot",
   SCHEDULED_SUBJECT = "scheduled_subject",

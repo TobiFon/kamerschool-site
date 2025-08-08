@@ -70,8 +70,8 @@ const MetricCard = ({
                         trend > 0
                           ? "text-green-600"
                           : trend < 0
-                          ? "text-red-600"
-                          : "text-gray-500"
+                            ? "text-red-600"
+                            : "text-gray-500"
                       }
                     >
                       {trend > 0 ? "+" : ""}
@@ -424,8 +424,8 @@ const TopStudentsList = ({ data }) => {
                       index === 0
                         ? "bg-yellow-500"
                         : index === 1
-                        ? "bg-gray-400"
-                        : "bg-amber-700"
+                          ? "bg-gray-400"
+                          : "bg-amber-700"
                     }`}
                   >
                     {student.rank || index + 1}

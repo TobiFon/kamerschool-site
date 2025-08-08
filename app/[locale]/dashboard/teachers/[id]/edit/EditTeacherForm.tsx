@@ -40,6 +40,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { toast } from "sonner";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Validation schema - Updated to match backend requirements
 const teacherFormSchema = z.object({
@@ -74,6 +75,7 @@ export default function EditTeacherForm({ teacherId }: EditTeacherFormProps) {
   const [isImageChanged, setIsImageChanged] = useState(false);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { canEdit } = useCurrentUser();
 
   // Setup form with validation
   const form = useForm<TeacherFormValues>({
@@ -250,10 +252,10 @@ export default function EditTeacherForm({ teacherId }: EditTeacherFormProps) {
               {formProgress < 50
                 ? t("gettingStarted")
                 : formProgress < 80
-                ? t("almostThere")
-                : formProgress === 100
-                ? t("readyToSubmit")
-                : t("inProgress")}
+                  ? t("almostThere")
+                  : formProgress === 100
+                    ? t("readyToSubmit")
+                    : t("inProgress")}
             </Badge>
           </div>
 
@@ -406,7 +408,7 @@ export default function EditTeacherForm({ teacherId }: EditTeacherFormProps) {
                       type="button"
                       variant="outline"
                       onClick={triggerFileInput}
-                      disabled={mutation.isPending}
+                      disabled={mutation.isPending || !canEdit}
                       className="mb-2"
                     >
                       {imagePreview ? t("changePicture") : t("uploadPicture")}
@@ -430,7 +432,7 @@ export default function EditTeacherForm({ teacherId }: EditTeacherFormProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || !canEdit}
                 className="bg-gradient-to-r from-primary/80 to-primary hover:from-primary hover:to-indigo-700 text-white px-8 transition-all"
               >
                 {mutation.isPending ? (

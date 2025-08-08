@@ -250,8 +250,8 @@ const TermResultsOverviewTab = ({
                       index === 0
                         ? "bg-amber-500"
                         : index === 1
-                        ? "bg-gray-400"
-                        : "bg-amber-700"
+                          ? "bg-gray-400"
+                          : "bg-amber-700"
                     }
                   `}
                 >
@@ -466,10 +466,10 @@ const TermResultsOverviewTab = ({
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs text-gray-500">
                           <span>
-                            {t("highestScore")}: {subject.highest_score || 0}/20
+                            {t("highestScore")}: {subject.highest || 0}/20
                           </span>
                           <span>
-                            {t("lowestScore")}: {subject.lowest_score || 0}/20
+                            {t("lowestScore")}: {subject.lowest || 0}/20
                           </span>
                         </div>
                         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -478,8 +478,8 @@ const TermResultsOverviewTab = ({
                               subject.pass_percentage >= 75
                                 ? "bg-emerald-500"
                                 : subject.pass_percentage >= 50
-                                ? "bg-amber-500"
-                                : "bg-red-500"
+                                  ? "bg-amber-500"
+                                  : "bg-red-500"
                             }`}
                             style={{ width: `${subject.pass_percentage}%` }}
                           ></div>
@@ -490,15 +490,15 @@ const TermResultsOverviewTab = ({
                               subject.pass_percentage >= 75
                                 ? "text-emerald-600"
                                 : subject.pass_percentage >= 50
-                                ? "text-amber-600"
-                                : "text-red-600"
+                                  ? "text-amber-600"
+                                  : "text-red-600"
                             }`}
                           >
                             {subject.pass_percentage >= 75
                               ? t("excellent")
                               : subject.pass_percentage >= 50
-                              ? t("satisfactory")
-                              : t("needsImprovement")}
+                                ? t("satisfactory")
+                                : t("needsImprovement")}
                           </span>
                           <Badge variant="outline" className="text-xs">
                             {subject.pass_count || 0}/

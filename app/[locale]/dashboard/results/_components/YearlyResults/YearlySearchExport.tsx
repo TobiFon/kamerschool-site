@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Search, Download, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface SearchAndExportYearlyProps {
   searchQuery: string;
@@ -24,6 +25,7 @@ const SearchAndExportYearly: React.FC<SearchAndExportYearlyProps> = ({
   selectedSubject,
 }) => {
   const t = useTranslations("Results");
+  const { canEdit } = useCurrentUser();
 
   return (
     <div className="flex flex-col md:flex-row gap-2 md:gap-4 md:ml-auto w-full md:w-auto">
@@ -46,7 +48,7 @@ const SearchAndExportYearly: React.FC<SearchAndExportYearlyProps> = ({
       </Button>
       <Button
         onClick={handleCalculateSubjectResults}
-        disabled={isCalculating || !selectedSubject}
+        disabled={isCalculating || !selectedSubject || !canEdit}
         className="flex items-center md:ml-2"
         variant="default"
       >

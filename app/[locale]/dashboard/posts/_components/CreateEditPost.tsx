@@ -1,10 +1,28 @@
+// app/dashboard/social-feed/_components/CreateEditPostDialog.tsx
 "use client";
-import { useState, useRef, useEffect } from "react";
-import { useTranslations } from "next-intl"; // Import useTranslations
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createPost, updatePost } from "@/queries/posts";
+import {
+  createPost,
+  updatePost,
+  bulkCreateMedia,
+  updatePostMedia,
+} from "@/queries/posts";
 import { Post } from "@/types/posts";
 import { toast } from "sonner";
+import Image from "next/image";
+import {
+  Plus,
+  Trash2,
+  UploadCloud,
+  FileVideo,
+  FileImage,
+  X,
+  Loader2,
+} from "lucide-react";
+import { useDropzone } from "react-dropzone";
+
 import {
   Dialog,
   DialogContent,
@@ -17,8 +35,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface CreateEditPostDialogProps {
   open: boolean;
@@ -31,189 +48,205 @@ export function CreateEditPostDialog({
   onOpenChange,
   post,
 }: CreateEditPostDialogProps) {
-  const t = useTranslations("CreateEditPostDialog"); // Fetch translations
-  const [formData, setFormData] = useState({ title: "", content: "" });
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const t = useTranslations("CreateEditPostDialog");
   const queryClient = useQueryClient();
+
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
 
   useEffect(() => {
     if (post) {
-      setFormData({ title: post.title, content: post.content });
+      setTitle(post.title || "");
+      setContent(post.content || "");
+      // Note: We don't load existing media files for editing, user will replace them.
+      setFiles([]);
+      setPreviews([]);
     } else {
-      setFormData({ title: "", content: "" });
-      setSelectedFiles([]);
-      setPreviewUrls([]);
+      // Reset form for creation
+      setTitle("");
+      setContent("");
+      setFiles([]);
+      setPreviews([]);
     }
-  }, [post]);
+  }, [post, open]);
 
-  const createMutation = useMutation({
-    mutationFn: (data: { postData: Partial<Post>; files: File[] }) =>
-      createPost(data.postData, data.files),
-    onSuccess: (newPost) => {
-      queryClient.setQueryData(["posts"], (oldData: any) => {
-        if (!oldData) return { results: [newPost] };
-        return {
-          ...oldData,
-          results: [newPost, ...oldData.results],
-        };
-      });
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      const newFiles = [...files, ...acceptedFiles];
+      setFiles(newFiles);
+      const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+      setPreviews(newPreviews);
+    },
+    [files]
+  );
 
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { "image/*": [], "video/*": [] },
+  });
+
+  const removeFile = (indexToRemove: number) => {
+    setFiles(files.filter((_, index) => index !== indexToRemove));
+    setPreviews(previews.filter((_, index) => index !== indexToRemove));
+  };
+
+  const handleClose = () => {
+    previews.forEach((url) => URL.revokeObjectURL(url));
+    onOpenChange(false);
+  };
+
+  const createPostMutation = useMutation({
+    mutationFn: createPost,
+    onSuccess: async (newPost) => {
+      if (files.length > 0) {
+        await bulkCreateMedia(newPost.id, files);
+      }
       toast.success(t("toast.postCreated"));
-      onOpenChange(false);
-    },
-    onError: (error: Error) => {
-      toast.error(t("toast.error", { message: error.message }));
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (data: {
-      id: number;
-      postData: Partial<Post>;
-      files: File[];
-    }) => updatePost(data.id, data.postData, data.files),
-    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast.success(t("toast.postUpdated"));
-      onOpenChange(false);
+      handleClose();
     },
-    onError: (error: Error) => {
-      toast.error(t("toast.error", { message: error.message }));
-    },
+    onError: (error: Error) =>
+      toast.error(t("toast.error", { message: error.message })),
   });
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  const updatePostMutation = useMutation({
+    mutationFn: (postData: { id: number; data: Partial<Post> }) =>
+      updatePost(postData.id, postData.data),
+    onSuccess: async (updatedPost) => {
+      if (files.length > 0) {
+        await updatePostMedia(updatedPost.id, files);
+      }
+      toast.success(t("toast.postUpdated"));
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      handleClose();
+    },
+    onError: (error: Error) =>
+      toast.error(t("toast.error", { message: error.message })),
+  });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const filesArray = Array.from(e.target.files);
-      setSelectedFiles(filesArray);
-      const urls = filesArray.map((file) => URL.createObjectURL(file));
-      setPreviewUrls(urls);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (post) {
-      updateMutation.mutate({
-        id: post.id,
-        postData: formData,
-        files: selectedFiles,
-      });
+      // Editing
+      updatePostMutation.mutate({ id: post.id, data: { title, content } });
     } else {
-      createMutation.mutate({ postData: formData, files: selectedFiles });
+      // Creating
+      createPostMutation.mutate({ title, content });
     }
   };
 
-  const renderMediaPreviews = () => {
-    if (previewUrls.length === 0) return null;
-    return (
-      <div className="mt-4 grid grid-cols-2 gap-2">
-        {previewUrls.map((url, index) => (
-          <div key={index} className="relative h-32 rounded-md overflow-hidden">
-            <Image
-              src={url}
-              alt={`Preview ${index}`}
-              layout="fill"
-              objectFit="cover"
-            />
-            <button
-              className="absolute top-1 right-1 bg-black bg-opacity-50 text-white rounded-full p-1"
-              onClick={() => {
-                setPreviewUrls(previewUrls.filter((_, i) => i !== index));
-                setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
-              }}
-            >
-              <Trash2 size={14} />
-            </button>
-          </div>
-        ))}
-      </div>
-    );
-  };
+  const isPending =
+    createPostMutation.isPending || updatePostMutation.isPending;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent
+        className="sm:max-w-2xl"
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>{post ? t("editTitle") : t("createTitle")}</DialogTitle>
           <DialogDescription>
             {post ? t("editDescription") : t("createDescription")}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="title">{t("titleLabel")}</Label>
-              <Input
-                id="title"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder={t("titlePlaceholder")}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="content">{t("contentLabel")}</Label>
-              <Textarea
-                id="content"
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                placeholder={t("contentPlaceholder")}
-                className="min-h-32"
-              />
-            </div>
-            {renderMediaPreviews()}
-            <div className="mt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center gap-2 w-full"
-              >
-                <Plus size={16} />
-                {t("addMedia")}
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*,video/*"
-                className="hidden"
-                onChange={handleFileChange}
-              />
+        <form onSubmit={handleSubmit} className="grid gap-6 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="title">{t("titleLabel")}</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t("titlePlaceholder")}
+              disabled={isPending}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="content">{t("contentLabel")}</Label>
+            <Textarea
+              id="content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder={t("contentPlaceholder")}
+              className="min-h-32"
+              disabled={isPending}
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label>{t("mediaLabel")}</Label>
+            <div
+              {...getRootProps()}
+              className={cn(
+                "border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
+                isDragActive
+                  ? "border-primary bg-primary/10"
+                  : "border-gray-300 dark:border-gray-700 hover:border-primary/50"
+              )}
+            >
+              <input {...getInputProps()} />
+              <div className="flex flex-col items-center text-muted-foreground">
+                <UploadCloud className="h-10 w-10 mb-2" />
+                <p>{t("dragAndDrop")}</p>
+                <p className="text-xs mt-1">{t("orClick")}</p>
+              </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              {t("cancel")}
-            </Button>
-            <Button
-              type="submit"
-              disabled={createMutation.isPending || updateMutation.isPending}
-            >
-              {createMutation.isPending || updateMutation.isPending
-                ? t("saving")
-                : post
-                ? t("updatePost")
-                : t("post")}
-            </Button>
-          </DialogFooter>
+
+          {previews.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">{t("previews")}</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {previews.map((preview, index) => (
+                  <div
+                    key={index}
+                    className="relative aspect-square rounded-md overflow-hidden group"
+                  >
+                    {files[index].type.startsWith("image/") ? (
+                      <Image
+                        src={preview}
+                        alt={`Preview ${index}`}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="bg-gray-800 h-full flex items-center justify-center">
+                        <FileVideo className="h-8 w-8 text-white" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={() => removeFile(index)}
+                      >
+                        <X size={16} />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </form>
+        <DialogFooter>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={isPending}
+          >
+            {t("cancel")}
+          </Button>
+          <Button type="submit" onClick={handleSubmit} disabled={isPending}>
+            {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {post ? t("updatePost") : t("createPostAction")}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

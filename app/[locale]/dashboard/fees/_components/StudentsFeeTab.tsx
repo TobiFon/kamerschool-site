@@ -1,4 +1,3 @@
-// src/app/[locale]/dashboard/finance/_components/tabs/StudentsFeeTab.tsx
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
@@ -11,24 +10,25 @@ import {
   FeeType,
   SimpleAcademicYearOption,
   SimpleClassOption,
-} from "@/types/fees"; // Assuming these types are correctly defined
-import { School } from "@/types/auth"; // Assuming this type is correctly defined
-import { fetchFeeTypes, fetchStudentFees } from "@/queries/fees"; // Ensure these functions exist and match signatures
-import { fetchAcademicYears } from "@/queries/results"; // Ensure this function exists
-import { fetchAllClasses } from "@/queries/class"; // Ensure this function exists
+} from "@/types/fees";
+import { School } from "@/types/auth";
+import { fetchFeeTypes, fetchStudentFees } from "@/queries/fees";
+import { fetchAcademicYears } from "@/queries/results";
+import { fetchAllClasses } from "@/queries/class";
 import { toast } from "sonner";
-import { StudentFeeColumns } from "./StudentsFeeColumn"; // Ensure this component exists
-import LoadingErrorState from "./LoadingErrorState"; // Ensure this component exists
-import { FilterControls } from "./FilterControls"; // Ensure this component exists
-import { StudentFeeDataTable } from "./StudentsFeeDataTable"; // Ensure this component exists
-import WaiveFeeDialog from "./WaiveFeeDailogue"; // Ensure this component exists
-import MakePaymentDialog from "./MakePaymentsDailog"; // Ensure this component exists
-import StudentFeeDetailDialog from "./StudentFeeDetailDialog"; // Ensure this component exists
+
+import { useCurrentUser } from "@/hooks/useCurrentUser"; // Import the hook
+import { StudentFeeColumns } from "./StudentsFeeColumn";
+import LoadingErrorState from "./LoadingErrorState";
+import { FilterControls } from "./FilterControls";
+import { StudentFeeDataTable } from "./StudentsFeeDataTable";
+import WaiveFeeDialog from "./WaiveFeeDailogue";
+import MakePaymentDialog from "./MakePaymentsDailog";
+import StudentFeeDetailDialog from "./StudentFeeDetailDialog";
 
 // Define status options for filter dropdown
-// Use the EXACT keys that will be used in the translation file
 const statusOptions: SimpleOption[] = [
-  { value: "pending", label: "Pending" }, // Label is display text / potential translation key base
+  { value: "pending", label: "Pending" },
   { value: "partial", label: "Partially Paid" },
   { value: "paid", label: "Paid" },
   { value: "overdue", label: "Overdue" },
@@ -36,18 +36,17 @@ const statusOptions: SimpleOption[] = [
 ];
 
 interface StudentFeesTabProps {
-  school: School; // Assuming School type includes id
+  school: School;
 }
 
-// Define Page Size
-const DEFAULT_PAGE_SIZE = 20; // Or your preferred default
+const DEFAULT_PAGE_SIZE = 20;
 
 const StudentFeesTab: React.FC<StudentFeesTabProps> = ({ school }) => {
-  const t = useTranslations("Finance"); // Namespace for finance-specific translations
-  const tc = useTranslations("Common"); // Namespace for common translations
+  const t = useTranslations("Finance");
+  const tc = useTranslations("Common");
   const queryClient = useQueryClient();
+  const { canEdit } = useCurrentUser(); // Get user permission status
 
-  // TODO: Get locale and currency dynamically (e.g., from context, user settings)
   const locale = "fr-CM";
   const currency = "XAF";
 
@@ -58,7 +57,6 @@ const StudentFeesTab: React.FC<StudentFeesTabProps> = ({ school }) => {
   const [selectedStudentFee, setSelectedStudentFee] =
     useState<StudentFee | null>(null);
 
-  // State for filters - keys match the 'id' in filterConfig
   const [filters, setFilters] = useState<{
     search: string;
     academic_year?: number;
@@ -76,58 +74,53 @@ const StudentFeesTab: React.FC<StudentFeesTabProps> = ({ school }) => {
   });
 
   // --- Data Fetching ---
-
-  // Memoize query parameters, mapping state keys to backend expected keys
   const queryParams = useMemo(
     () => ({
-      search: filters.search || undefined, // Send undefined if empty string
-      class_fee__academic_year: filters.academic_year, // Use Django ORM lookup format
-      class_fee__class_instance: filters.class_instance, // Use Django ORM lookup format
-      class_fee__fee_type: filters.fee_type, // Use Django ORM lookup format
-      status: filters.status, // Status is a direct field on StudentFee
+      search: filters.search || undefined,
+      class_fee__academic_year: filters.academic_year,
+      class_fee__class_instance: filters.class_instance,
+      class_fee__fee_type: filters.fee_type,
+      status: filters.status,
       page: filters.page,
       page_size: DEFAULT_PAGE_SIZE,
-      // school_id: school.id, // Add if needed and handled by backend filter/queryset scoping
     }),
-    [filters] // Recompute only when filters change
+    [filters]
   );
 
-  // Fetch paginated student fees based on queryParams
   const { data, isLoading, error, isFetching } = useQuery<
     PaginatedResponse<StudentFee>,
     Error
   >({
-    queryKey: ["studentFees", queryParams], // Include queryParams in the key for caching
-    queryFn: () => fetchStudentFees(queryParams), // Pass the correctly formatted params
-    placeholderData: (previousData) => previousData, // Keep previous data while loading new page
-    staleTime: 1 * 60 * 1000, // Data is considered fresh for 1 minute
+    queryKey: ["studentFees", queryParams],
+    queryFn: () => fetchStudentFees(queryParams),
+    placeholderData: (previousData) => previousData,
+    staleTime: 1 * 60 * 1000,
   });
 
-  // Fetch data for filter dropdowns - assuming they return simple lists or PaginatedResponse
   const { data: academicYears } = useQuery<SimpleAcademicYearOption[]>({
     queryKey: ["academicYearsSimple"],
-    queryFn: () => fetchAcademicYears({ page_size: 1000 }), // Fetch many years, assuming SimpleAcademicYearOption {id, name}
-    staleTime: Infinity, // Academic years change infrequently
+    queryFn: () => fetchAcademicYears({ page_size: 1000 }),
+    staleTime: Infinity,
   });
 
   const { data: classes } = useQuery<SimpleClassOption[]>({
     queryKey: ["classesSimple"],
-    queryFn: () => fetchAllClasses(), // Assuming SimpleClassOption {id, full_name}
-    staleTime: 5 * 60 * 1000, // Classes might change, refetch every 5 mins
+    queryFn: () => fetchAllClasses(),
+    staleTime: 5 * 60 * 1000,
   });
 
   const { data: feeTypesPaginated } = useQuery<PaginatedResponse<FeeType>>({
-    queryKey: ["feeTypesSimple", school.id], // Include school ID if fee types are school-specific
+    queryKey: ["feeTypesSimple", school.id],
     queryFn: () =>
       fetchFeeTypes({
         is_active: true,
-        page_size: 1000 /* school_id: school.id */,
-      }), // Fetch active types
-    staleTime: 5 * 60 * 1000, // Fee types might change
+        page_size: 1000,
+      }),
+    staleTime: 5 * 60 * 1000,
   });
-  const feeTypes = feeTypesPaginated?.results ?? []; // Extract results if paginated
+  const feeTypes = feeTypesPaginated?.results ?? [];
 
-  // --- Action Handlers (useCallback for stable references) ---
+  // --- Action Handlers ---
   const handleViewDetails = useCallback((fee: StudentFee) => {
     setSelectedStudentFee(fee);
     setDetailDialogOpen(true);
@@ -137,28 +130,28 @@ const StudentFeesTab: React.FC<StudentFeesTabProps> = ({ school }) => {
     (fee: StudentFee) => {
       if (fee.status === "paid" || fee.status === "waived") {
         toast.warning(tc("warning"), {
-          description: t("cannotPayPaidOrWaived"), // Use translation
+          description: t("cannotPayPaidOrWaived"),
         });
         return;
       }
       setSelectedStudentFee(fee);
       setMakePaymentDialogOpen(true);
     },
-    [t, tc] // Dependencies for translations
+    [t, tc]
   );
 
   const handleWaive = useCallback(
     (fee: StudentFee) => {
       if (fee.status === "paid" || fee.status === "waived") {
         toast.warning(tc("warning"), {
-          description: t("cannotWaivePaidOrWaived"), // Use translation
+          description: t("cannotWaivePaidOrWaived"),
         });
         return;
       }
       setSelectedStudentFee(fee);
       setWaiveDialogOpen(true);
     },
-    [t, tc] // Dependencies for translations
+    [t, tc]
   );
 
   // --- Column Definition (Memoized) ---
@@ -172,77 +165,83 @@ const StudentFeesTab: React.FC<StudentFeesTabProps> = ({ school }) => {
         onWaive: handleWaive,
         currency,
         locale,
+        canEdit: canEdit, // Pass permission status down
       }),
-    [t, tc, handleViewDetails, handleMakePayment, handleWaive, currency, locale] // Add locale/currency if column formatting depends on them
+    [
+      t,
+      tc,
+      handleViewDetails,
+      handleMakePayment,
+      handleWaive,
+      currency,
+      locale,
+      canEdit, // Add canEdit to dependency array
+    ]
   );
 
-  // --- Filter Configuration (Memoized) ---
-  // Define the structure and options for the FilterControls component
+  // --- Filter Configuration ---
   const filterConfig = useMemo(
     () => [
       {
-        id: "search", // Matches filters state key
-        label: tc("searchStudent"), // Common translation
-        type: "search" as const, // Type for FilterControls logic
-        placeholder: tc("enterNameMatricule"), // Common translation
+        id: "search",
+        label: tc("searchStudent"),
+        type: "search" as const,
+        placeholder: tc("enterNameMatricule"),
       },
       {
-        id: "academic_year", // Matches filters state key
-        label: t("academicYear"), // Finance translation
+        id: "academic_year",
+        label: t("academicYear"),
         type: "select" as const,
-        placeholder: tc("selectAll"), // Common translation
+        placeholder: tc("selectAll"),
         options:
-          academicYears?.map((y) => ({ value: y.id, label: y.name })) || [], // Map fetched data
+          academicYears?.map((y) => ({ value: y.id, label: y.name })) || [],
       },
       {
-        id: "class_instance", // Matches filters state key
-        label: t("class"), // Finance translation
+        id: "class_instance",
+        label: t("class"),
         type: "select" as const,
-        placeholder: tc("selectAll"), // Common translation
+        placeholder: tc("selectAll"),
         options:
-          classes?.map((c) => ({ value: c.id, label: c.full_name })) || [], // Map fetched data
+          classes?.map((c) => ({ value: c.id, label: c.full_name })) || [],
       },
       {
-        id: "fee_type", // Matches filters state key
-        label: t("feeType"), // Finance translation
+        id: "fee_type",
+        label: t("feeType"),
         type: "select" as const,
-        placeholder: tc("selectAll"), // Common translation
+        placeholder: tc("selectAll"),
         options:
-          feeTypes?.map((ft) => ({ value: ft.id, label: ft.name })) || [], // Map fetched data
+          feeTypes?.map((ft) => ({ value: ft.id, label: ft.name })) || [],
       },
       {
-        id: "status", // Matches filters state key
-        label: t("status"), // Finance translation
+        id: "status",
+        label: t("status"),
         type: "select" as const,
-        placeholder: t("selectStatus"), // Finance translation
+        placeholder: t("selectStatus"),
         options: statusOptions.map((s) => ({
           value: s.value,
-          // Use translation function `t` with the `label` from statusOptions as the key
-          label: t(s.label.replace(/\s+/g, "")), // Assuming keys are like 'Pending', 'PartiallyPaid'
+          label: t(s.label.replace(/\s+/g, "")),
         })),
       },
     ],
-    [t, tc, academicYears, classes, feeTypes] // Dependencies include data and translations
+    [t, tc, academicYears, classes, feeTypes]
   );
 
-  // --- Pagination Calculation (Memoized) ---
+  // --- Pagination Calculation ---
   const totalItems = data?.count ?? 0;
   const totalPages = Math.ceil(totalItems / DEFAULT_PAGE_SIZE);
 
   const pagination = useMemo(
     () => ({
       currentPage: filters.page,
-      totalPages: totalPages > 0 ? totalPages : 1, // Ensure totalPages is at least 1
+      totalPages: totalPages > 0 ? totalPages : 1,
       hasNext: !!data?.next,
       hasPrev: !!data?.previous,
-      totalItems: totalItems, // Optional: Pass total items if needed by DataTable
+      totalItems: totalItems,
     }),
     [filters.page, totalPages, data?.next, data?.previous, totalItems]
   );
 
   // --- Render Logic ---
-
-  // Handle initial loading and error states before filters are interactive
   if (isLoading && filters.page === 1) {
     return <LoadingErrorState isLoading={true} />;
   }
@@ -252,44 +251,36 @@ const StudentFeesTab: React.FC<StudentFeesTabProps> = ({ school }) => {
 
   return (
     <div className="space-y-4 p-4 md:p-6">
-      {" "}
-      {/* Add some padding */}
-      {/* Filter Controls */}
       <FilterControls
         filters={filters}
-        setFilters={setFilters} // Pass the state setter
-        config={filterConfig} // Pass the configuration array
+        setFilters={setFilters}
+        config={filterConfig}
       />
-      {/* Loading/Error indicators during refetching */}
       {isFetching && !isLoading && (
         <LoadingErrorState
           isLoading={true}
           spinnerSize="small"
-          message={tc("loading")} // Common translation
+          message={tc("loading")}
         />
       )}
-      {error &&
-        !isLoading &&
-        !data?.results?.length && ( // Show error if refetch fails and no data shown
-          <LoadingErrorState error={error} />
-        )}
-      {/* Data Table */}
+      {error && !isLoading && !data?.results?.length && (
+        <LoadingErrorState error={error} />
+      )}
       <StudentFeeDataTable
         columns={tableColumns}
-        data={data?.results ?? []} // Provide data or empty array
-        pagination={pagination} // Provide pagination state
-        onPageChange={
-          (newPage) => setFilters((prev) => ({ ...prev, page: newPage })) // Handle page changes
+        data={data?.results ?? []}
+        pagination={pagination}
+        onPageChange={(newPage) =>
+          setFilters((prev) => ({ ...prev, page: newPage }))
         }
       />
-      {/* Dialogs */}
-      {selectedStudentFee && ( // Conditionally render dialogs only when a fee is selected
+      {selectedStudentFee && (
         <>
           <WaiveFeeDialog
             isOpen={isWaiveDialogOpen}
             onClose={() => setWaiveDialogOpen(false)}
             studentFee={selectedStudentFee}
-            schoolId={school.id} // Pass necessary props
+            schoolId={school.id}
             currency={currency}
             locale={locale}
           />
@@ -303,7 +294,7 @@ const StudentFeesTab: React.FC<StudentFeesTabProps> = ({ school }) => {
           <StudentFeeDetailDialog
             isOpen={isDetailDialogOpen}
             onClose={() => setDetailDialogOpen(false)}
-            studentFeeId={selectedStudentFee.id} // Pass ID directly
+            studentFeeId={selectedStudentFee.id}
             currency={currency}
             locale={locale}
           />

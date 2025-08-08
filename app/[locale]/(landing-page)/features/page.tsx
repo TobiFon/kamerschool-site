@@ -34,7 +34,7 @@ export async function generateMetadata({
       title: safeGet(tMeta, "ogTitle"),
       description: safeGet(tMeta, "ogDescription"),
       type: safeGet(tRoot, "openGraph.type", "website"),
-      siteName: safeGet(tRoot, "openGraph.siteName", "Kamerschools"),
+      siteName: safeGet(tRoot, "openGraph.siteName", "KamerSchool"),
       locale: locale,
     },
     // keywords: safeGet(tMeta, "keywords").split(',').map((k: string) => k.trim()), // If you have keywords

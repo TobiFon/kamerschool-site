@@ -101,10 +101,14 @@ const StudentSubjectsPage = () => {
       return bulkUpdateStudentSubjects(payload.studentId, allRequiredIds);
     },
     onSuccess: () => {
+      // 1. Invalidate this student's specific data (you are already doing this)
       queryClient.invalidateQueries({
         queryKey: ["studentSubjectEnrollments", studentId],
       });
       queryClient.invalidateQueries({ queryKey: ["student", studentId] });
+
+      queryClient.invalidateQueries({ queryKey: ["subjectSequenceScores"] });
+
       toast.success(t("subjectsUpdatedSuccessTitle"), {
         description: t("subjectsUpdatedSuccessDesc"),
       });

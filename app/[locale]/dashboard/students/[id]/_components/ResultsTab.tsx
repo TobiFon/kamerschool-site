@@ -1,10 +1,10 @@
-// src/app/[locale]/dashboard/students/[id]/_components/ResultsTab.tsx
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { saveAs } from "file-saver"; // <-- IMPORT ADDED
 import {
   Loader2,
   AlertCircle,
@@ -20,6 +20,7 @@ import {
   Target,
   Download,
   Info,
+  Hourglass,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { fetchStudentDetailedResults } from "@/queries/students";
@@ -45,14 +46,14 @@ import {
   fetchAcademicYears,
   fetchStudentHistoricalSequences,
   fetchTerms,
-  // Removed: fetchSequences (admin-centric, replaced by fetchStudentHistoricalSequences)
 } from "@/queries/results";
-import { fetchSchool } from "@/lib/auth"; // For export
+import { fetchSchool } from "@/lib/auth";
 import { exportReportCardToPDF } from "@/lib/exportReportCard";
 import { cn } from "@/lib/utils";
 import { School } from "@/types/auth";
-import { Sequence } from "@/types/results"; // Ensure correct types
+import { Sequence, Term } from "@/types/results";
 import { AcademicYear } from "@/types/transfers";
+import { toast } from "sonner"; // <-- IMPORT ADDED for feedback
 
 interface ResultsTabProps {
   studentData: Student | null | undefined;
@@ -103,14 +104,12 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
     staleTime: 60 * 1000,
     retry: 1,
   });
-  console.log(resultsData);
+
   const { data: schoolData, isLoading: isLoadingSchool } = useQuery<
     School,
     Error
   >({
-    // Removed: fetchStudentEnrollmentHistory (not strictly needed if historical sequences are fetched directly with studentId and year/term)
-    fetchStudentHistoricalSequences, // USE THIS
-    queryKey: ["schoolDataForExport"], // Ensure a unique key if this is different from other school queries
+    queryKey: ["schoolDataForExport"],
     queryFn: fetchSchool,
     staleTime: Infinity,
   });
@@ -134,31 +133,24 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
     staleTime: 5 * 60 * 1000,
   });
 
-  // MODIFIED: Fetch Sequences using fetchStudentHistoricalSequences
   const { data: sequences, isLoading: isLoadingSequences } = useQuery<
     Sequence[],
     Error
   >({
     queryKey: [
-      "studentHistoricalSequences", // Unique key for this query
+      "studentHistoricalSequences",
       studentId,
       filters.academicYearId,
       filters.termId,
     ],
     queryFn: () => {
-      if (!studentId || !filters.academicYearId) {
-        // studentId and academicYearId are required to determine historical context
-        return Promise.resolve([]);
-      }
+      if (!studentId || !filters.academicYearId) return Promise.resolve([]);
       return fetchStudentHistoricalSequences({
         studentId: studentId,
         academicYearId: filters.academicYearId,
-        termId: filters.termId, // termId is optional for the backend endpoint
+        termId: filters.termId,
       });
     },
-    // Enable if studentId and a specific academicYearId are selected,
-    // as academicYearId is needed to determine the historical school for sequences.
-    // TermId is not strictly required to enable, as backend might list all sequences for the year if termId is null.
     enabled: !!studentId && !!filters.academicYearId,
     staleTime: 1 * 60 * 1000,
   });
@@ -179,15 +171,12 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
   const handleYearChange = (value: string) => {
     setFilters({ academicYearId: value, termId: null, sequenceId: null });
   };
-
   const handleTermChange = (value: string) => {
     setFilters((prev) => ({ ...prev, termId: value, sequenceId: null }));
   };
-
   const handleSequenceChange = (value: string) => {
     setFilters((prev) => ({ ...prev, sequenceId: value }));
   };
-
   const handleSort = (column: string) => {
     if (sortColumn === column) {
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -196,7 +185,6 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
       setSortDirection("asc");
     }
   };
-
   const sortedSubjects = React.useMemo(() => {
     if (!resultsData?.results?.subject_breakdown) return [];
     const breakdown = Array.isArray(resultsData.results.subject_breakdown)
@@ -262,37 +250,55 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
     return "bg-rose-50 dark:bg-rose-950/30";
   };
 
-  const handleExportReportCard = () => {
+  // --- FUNCTION MODIFIED ---
+  const handleExportReportCard = async () => {
     if (!resultsData?.results || !resultsData.period_type) {
-      console.error("Cannot export: Results data or period type is missing.");
-      alert(tExport("noDataError"));
+      toast.error(tExport("noDataError"));
       return;
     }
     if (!schoolData) {
-      console.error("Cannot export: School data not loaded.");
-      alert(tExport("noSchoolDataError"));
+      toast.error(tExport("noSchoolDataError"));
       return;
     }
-    const studentDetailsForReport = resultsData?.student_info;
-    const studentNameForFile = studentDetailsForReport
-      ? `${studentDetailsForReport.full_name}`.trim()
-      : tCommon("unknownStudent");
-    const periodName =
-      resultsData.results.period_info?.name || tExport("unknownPeriod");
-    const safePeriodName = periodName.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-    const safeStudentName = studentNameForFile
-      .replace(/[^a-z0-9]/gi, "_")
-      .toLowerCase();
-    const filename = `${safeStudentName}_${safePeriodName}`;
-    exportReportCardToPDF(
-      tExport,
-      resultsData,
-      studentData,
-      filename,
-      schoolData,
-      10
-    );
+
+    const toastId = toast.loading(tExport("generating"));
+
+    try {
+      const studentDetailsForReport = resultsData?.student_info;
+      const studentNameForFile = studentDetailsForReport
+        ? `${studentDetailsForReport.full_name}`.trim()
+        : tCommon("unknownStudent");
+      const periodName =
+        resultsData.results.period_info?.name || tExport("unknownPeriod");
+      const safePeriodName = periodName
+        .replace(/[^a-z0-9]/gi, "_")
+        .toLowerCase();
+      const safeStudentName = studentNameForFile
+        .replace(/[^a-z0-9]/gi, "_")
+        .toLowerCase();
+      const filename = `${safeStudentName}_${safePeriodName}_report_card`;
+
+      const pdfBlob = await exportReportCardToPDF(
+        tExport,
+        resultsData,
+        studentData,
+        filename,
+        schoolData,
+        10
+      );
+
+      saveAs(pdfBlob, `${filename}.pdf`);
+
+      toast.success(tExport("generateSuccess"), { id: toastId });
+    } catch (error) {
+      console.error("Failed to generate report card:", error);
+      toast.error(tExport("generateError"), {
+        id: toastId,
+        description: (error as Error).message,
+      });
+    }
   };
+  // --- END OF MODIFICATION ---
 
   const FiltersHeader = () => (
     <div className="flex flex-col lg:flex-row gap-3 lg:items-end lg:justify-between p-4 bg-gradient-to-br from-background to-muted/40 border-b">
@@ -507,172 +513,168 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
   );
 
   const PeriodSummary = () => {
-    if (
-      !resultsData?.results?.period_info ||
-      !resultsData?.results?.overall_performance
-    )
-      return null;
+    if (!resultsData?.results?.period_info) return null;
     const { period_info, overall_performance } = resultsData.results;
     const periodType = resultsData.period_type;
-    return (
-      <div className="border-b border-border/50 bg-background/30">
-        <div className="p-4">
-          <h3 className="font-semibold text-foreground text-lg">
-            {period_info.name}
-            {period_info.academic_year_name && (
+    if (overall_performance) {
+      return (
+        <div className="border-b border-border/50 bg-background/30">
+          <div className="p-4">
+            <h3 className="font-semibold text-foreground text-lg">
+              {period_info.name}
               <span className="text-sm font-normal text-muted-foreground ml-2">
                 {period_info.academic_year_name}
                 {periodType === "sequence" && period_info.term_name && (
                   <> · {period_info.term_name}</>
                 )}
               </span>
-            )}
-          </h3>
-          <div className="mt-1 mb-1 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex flex-col">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {tSummary("averageScore")}
-                </span>
-                <span
-                  className={cn(
-                    "text-lg font-bold tabular-nums",
-                    getScoreColor(overall_performance.average)
-                  )}
-                >
-                  {overall_performance.average != null
-                    ? Number(overall_performance.average).toFixed(2)
-                    : tCommon("notAvailableShort")}
-                  <span className="text-muted-foreground text-xs font-normal ml-1">
-                    /20
+            </h3>
+            <div className="mt-1 mb-1 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex flex-col">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {tSummary("averageScore")}
                   </span>
-                </span>
-              </div>
-              <div className="relative h-2 bg-muted rounded overflow-hidden">
-                {overall_performance.average != null && (
-                  <div
-                    className={cn(
-                      "absolute top-0 left-0 h-full",
-                      Number(overall_performance.average) >= 16
-                        ? "bg-blue-500"
-                        : Number(overall_performance.average) >= 14
-                          ? "bg-cyan-500"
-                          : Number(overall_performance.average) >= 10
-                            ? "bg-emerald-500"
-                            : Number(overall_performance.average) >= 8
-                              ? "bg-amber-500"
-                              : "bg-rose-500"
-                    )}
-                    style={{
-                      width: `${Math.min(
-                        (Number(overall_performance.average) || 0) * 5,
-                        100
-                      )}%`,
-                    }}
-                  />
-                )}
-              </div>
-              <div className="mt-3 flex justify-between items-center">
-                <Badge
-                  variant={
-                    overall_performance.average != null
-                      ? Number(overall_performance.average) >= 10
-                        ? "success"
-                        : "destructive"
-                      : "secondary"
-                  }
-                >
-                  {overall_performance.average != null
-                    ? Number(overall_performance.average) >= 10
-                      ? tStatus("passed")
-                      : tStatus("failed")
-                    : tStatus("unknown")}
-                </Badge>
-                {overall_performance.remarks && (
                   <span
-                    className="text-xs italic text-muted-foreground text-right flex-1 ml-2 truncate"
-                    title={overall_performance.remarks}
-                  >
-                    {overall_performance.remarks}
-                  </span>
-                )}
-              </div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-medium text-muted-foreground flex items-center">
-                  <Target className="h-3.5 w-3.5 mr-1 text-primary/70" />
-                  {tSummary("classRank")}
-                </span>
-                <div className="flex items-center">
-                  <span className="font-bold text-foreground tabular-nums">
-                    {overall_performance.rank != null &&
-                    overall_performance.class_size != null
-                      ? `${overall_performance.rank} / ${overall_performance.class_size}`
-                      : tCommon("notAvailableShort")}
-                  </span>
-                  {overall_performance.rank != null &&
-                    overall_performance.rank <= 3 && (
-                      <span className="ml-1.5">
-                        {overall_performance.rank === 1
-                          ? "🥇"
-                          : overall_performance.rank === 2
-                            ? "🥈"
-                            : "🥉"}
-                      </span>
+                    className={cn(
+                      "text-lg font-bold tabular-nums",
+                      getScoreColor(overall_performance.average)
                     )}
+                  >
+                    {overall_performance.average != null
+                      ? Number(overall_performance.average).toFixed(2)
+                      : tCommon("notAvailableShort")}
+                    <span className="text-muted-foreground text-xs font-normal ml-1">
+                      /20
+                    </span>
+                  </span>
+                </div>
+                <div className="relative h-2 bg-muted rounded overflow-hidden">
+                  {overall_performance.average != null && (
+                    <div
+                      className={cn(
+                        "absolute top-0 left-0 h-full",
+                        Number(overall_performance.average) >= 16
+                          ? "bg-blue-500"
+                          : Number(overall_performance.average) >= 14
+                            ? "bg-cyan-500"
+                            : Number(overall_performance.average) >= 10
+                              ? "bg-emerald-500"
+                              : Number(overall_performance.average) >= 8
+                                ? "bg-amber-500"
+                                : "bg-rose-500"
+                      )}
+                      style={{
+                        width: `${Math.min((Number(overall_performance.average) || 0) * 5, 100)}%`,
+                      }}
+                    />
+                  )}
+                </div>
+                <div className="mt-3 flex justify-between items-center">
+                  <Badge
+                    variant={
+                      overall_performance.average != null
+                        ? Number(overall_performance.average) >= 10
+                          ? "success"
+                          : "destructive"
+                        : "secondary"
+                    }
+                  >
+                    {overall_performance.average != null
+                      ? Number(overall_performance.average) >= 10
+                        ? tStatus("passed")
+                        : tStatus("failed")
+                      : tStatus("unknown")}
+                  </Badge>
+                  {overall_performance.remarks && (
+                    <span
+                      className="text-xs italic text-muted-foreground text-right flex-1 ml-2 truncate"
+                      title={overall_performance.remarks}
+                    >
+                      {overall_performance.remarks}
+                    </span>
+                  )}
                 </div>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-medium text-muted-foreground flex items-center">
-                  <UserSquare className="h-3.5 w-3.5 mr-1 text-primary/70" />
-                  {tSummary("classAverage")}
-                </span>
-                <span className="font-semibold text-foreground tabular-nums">
-                  {overall_performance.class_average_overall != null
-                    ? Number(overall_performance.class_average_overall).toFixed(
-                        2
-                      )
-                    : tCommon("notAvailableShort")}
-                </span>
+              <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center">
+                    <Target className="h-3.5 w-3.5 mr-1 text-primary/70" />
+                    {tSummary("classRank")}
+                  </span>
+                  <div className="flex items-center">
+                    <span className="font-bold text-foreground tabular-nums">
+                      {overall_performance.rank != null &&
+                      overall_performance.class_size != null
+                        ? `${overall_performance.rank} / ${overall_performance.class_size}`
+                        : tCommon("notAvailableShort")}
+                    </span>
+                    {overall_performance.rank != null &&
+                      overall_performance.rank <= 3 && (
+                        <span className="ml-1.5">
+                          {overall_performance.rank === 1
+                            ? "🥇"
+                            : overall_performance.rank === 2
+                              ? "🥈"
+                              : "🥉"}
+                        </span>
+                      )}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-muted-foreground flex items-center">
+                    <UserSquare className="h-3.5 w-3.5 mr-1 text-primary/70" />
+                    {tSummary("classAverage")}
+                  </span>
+                  <span className="font-semibold text-foreground tabular-nums">
+                    {overall_performance.class_average_overall != null
+                      ? Number(
+                          overall_performance.class_average_overall
+                        ).toFixed(2)
+                      : tCommon("notAvailableShort")}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {tSummary("totalPoints")}
-                </span>
-                <span className="font-semibold text-foreground tabular-nums">
-                  {overall_performance.total_points != null
-                    ? Number(overall_performance.total_points).toFixed(2)
-                    : tCommon("notAvailableShort")}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-xs font-medium text-muted-foreground">
-                  {tSummary("totalCoefficient")}
-                </span>
-                <span className="font-semibold text-foreground tabular-nums">
-                  {overall_performance.total_coefficient ??
-                    tCommon("notAvailableShort")}
-                </span>
+              <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {tSummary("totalPoints")}
+                  </span>
+                  <span className="font-semibold text-foreground tabular-nums">
+                    {overall_performance.total_points != null
+                      ? Number(overall_performance.total_points).toFixed(2)
+                      : tCommon("notAvailableShort")}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {tSummary("totalCoefficient")}
+                  </span>
+                  <span className="font-semibold text-foreground tabular-nums">
+                    {overall_performance.total_coefficient ??
+                      tCommon("notAvailableShort")}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    );
-  };
-
-  const SortIndicator = ({ column }: { column: string }) => {
-    if (sortColumn !== column)
-      return (
-        <ArrowUpDown className="h-3 w-3 ml-1 text-muted-foreground/50 group-hover:text-muted-foreground" />
       );
-    return sortDirection === "asc" ? (
-      <TrendingUp className="h-3.5 w-3.5 ml-1 text-primary" />
-    ) : (
-      <TrendingDown className="h-3.5 w-3.5 ml-1 text-primary" />
+    }
+    return (
+      <div className="border-b border-border/50 bg-amber-50/50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300">
+        <div className="p-4 flex items-center gap-3">
+          <Hourglass className="h-5 w-5 flex-shrink-0" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-foreground text-lg">
+              {period_info.name}
+            </h3>
+            <p className="text-xs font-medium mt-0.5">
+              {tSummary("pendingFinalization")}
+            </p>
+          </div>
+        </div>
+      </div>
     );
   };
 
@@ -686,6 +688,17 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
       );
     }
     const periodType = resultsData?.period_type;
+    const SortIndicator = ({ column }: { column: string }) => {
+      if (sortColumn !== column)
+        return (
+          <ArrowUpDown className="h-3 w-3 ml-1 text-muted-foreground/50 group-hover:text-muted-foreground" />
+        );
+      return sortDirection === "asc" ? (
+        <TrendingUp className="h-3.5 w-3.5 ml-1 text-primary" />
+      ) : (
+        <TrendingDown className="h-3.5 w-3.5 ml-1 text-primary" />
+      );
+    };
     return (
       <div className="overflow-x-auto">
         <Table className="w-full min-w-[600px]">
@@ -889,31 +902,13 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
     );
   };
 
-  if (isLoading && !resultsData && !isError) {
-    return (
-      <Card className="bg-background border shadow-sm">
-        <div className="space-y-4 p-4 animate-pulse">
-          <div className="flex flex-col lg:flex-row gap-3 lg:items-end lg:justify-between">
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
-              <div className="h-16 bg-muted rounded"></div>
-              <div className="h-16 bg-muted rounded"></div>
-              <div className="h-16 bg-muted rounded"></div>
-            </div>
-            <div className="flex items-center justify-end space-x-2 mt-3 lg:mt-0">
-              <div className="h-9 w-24 bg-muted rounded"></div>
-              <div className="h-9 w-28 bg-muted rounded"></div>
-            </div>
-          </div>
-          <div className="h-28 bg-muted rounded mt-4"></div>
-          <div className="h-64 bg-muted rounded mt-4"></div>
-        </div>
-      </Card>
-    );
-  }
-
-  if (isError) {
-    return (
-      <Card className="bg-destructive/5 border-destructive shadow-sm">
+  /**
+   * Main conditional rendering logic for the content area.
+   */
+  const renderContent = () => {
+    // State 1: A hard error occurred (e.g., 500 server error, network issue).
+    if (isError) {
+      return (
         <div className="p-6 text-center flex flex-col items-center gap-3">
           <AlertCircle className="h-8 w-8 text-destructive" />
           <p className="font-semibold text-destructive">{t("errorTitle")}</p>
@@ -931,27 +926,30 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
             {tCommon("retry")}
           </Button>
         </div>
-      </Card>
-    );
-  }
+      );
+    }
 
-  return (
-    <Card className="bg-background border shadow-sm overflow-hidden">
-      <FiltersHeader />
-      {!resultsData?.results && !isLoading && !isFetching && (
+    // State 2: Data is loading for the first time.
+    if (isLoading) {
+      return (
+        <div className="space-y-4 p-4">
+          <div className="h-28 bg-muted rounded animate-pulse"></div>
+          <div className="h-64 bg-muted rounded animate-pulse"></div>
+        </div>
+      );
+    }
+
+    // State 3: We have data from the API. Now we check what's inside.
+    // Case 3a: The API returned no results (our resilient 404 handler).
+    if (!resultsData?.results) {
+      return (
         <div className="p-8 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
             <Archive className="h-6 w-6 text-muted-foreground" />
           </div>
           <h3 className="mt-3 text-lg font-medium">{t("noDataTitle")}</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            {filters.sequenceId
-              ? t("noDataMessageSequence")
-              : filters.termId
-                ? t("noDataMessageTerm")
-                : filters.academicYearId
-                  ? t("noDataMessageYear")
-                  : t("noDataMessageDefault")}
+            {resultsData?.message || t("noDataMessageDefault")}
           </p>
           <div className="mt-6">
             <Button
@@ -964,20 +962,27 @@ const ResultsTab: React.FC<ResultsTabProps> = ({ studentData }) => {
             </Button>
           </div>
         </div>
-      )}
-      {resultsData?.results && (
-        <>
-          <PeriodSummary />
-          <div className="mt-0 relative">
-            {isFetching && (
-              <div className="absolute inset-0 bg-background/70 flex items-center justify-center z-20">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            )}
-            <SubjectsTable />
+      );
+    }
+
+    // Case 3b: We have a results object (full or partial).
+    return (
+      <div className="relative">
+        {isFetching && (
+          <div className="absolute inset-0 bg-background/70 flex items-center justify-center z-20">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        </>
-      )}
+        )}
+        <PeriodSummary />
+        <SubjectsTable />
+      </div>
+    );
+  };
+
+  return (
+    <Card className="bg-background border shadow-sm overflow-hidden">
+      <FiltersHeader />
+      {renderContent()}
     </Card>
   );
 };

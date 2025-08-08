@@ -6,11 +6,9 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
   PlusCircle,
-  Edit,
-  Trash2,
   Eye,
+  Trash2,
   CheckCircle,
-  XCircle,
   Loader2,
   ListFilter,
   AlertCircle,
@@ -68,11 +66,12 @@ import { fetchAllClasses } from "@/queries/class";
 import PaginationControls from "../../results/_components/PaginationControls";
 import ConfirmationDialog from "../../fees/_components/ConfirmDailogue";
 import ClassTimetableCreateModal from "./ClassTimeTableCreateModal";
+import { useCurrentUser } from "@/hooks/useCurrentUser"; // Import the hook
 
 const DEFAULT_PAGE_SIZE = 20;
 
 interface ClassTimetablesOverviewProps {
-  onViewTimetable: (timetableId: number) => void; // Callback to navigate to editor
+  onViewTimetable: (timetableId: number) => void;
 }
 
 const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
@@ -81,16 +80,16 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
   const t = useTranslations("Timetable.ClassTimetables");
   const tCommon = useTranslations("Common");
   const queryClient = useQueryClient();
+  const { canEdit } = useCurrentUser(); // Get user permission status
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // No editing modal here, editing happens in the TimetableEditor component
   const [timetableToDelete, setTimetableToDelete] =
     useState<ClassTimetable | null>(null);
 
   const [filters, setFilters] = useState<{
-    academicYearId: string; // "all" or ID
-    classId: string; // "all" or ID
-    isActive: string; // "all", "true", "false"
+    academicYearId: string;
+    classId: string;
+    isActive: string;
   }>({ academicYearId: "all", classId: "all", isActive: "all" });
 
   const [pagination, setPagination] = useState({
@@ -98,7 +97,6 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
     pageSize: DEFAULT_PAGE_SIZE,
   });
 
-  // Fetch current school data
   const { data: schoolData, isLoading: isLoadingSchool } = useQuery<
     School,
     Error
@@ -108,7 +106,6 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
     staleTime: Infinity,
   });
 
-  // Fetch Academic Years for filter
   const { data: academicYears, isLoading: isLoadingAcademicYears } = useQuery<
     AcademicYear[],
     Error
@@ -123,20 +120,18 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
       ),
   });
 
-  // Fetch Classes for filter (for the current school)
   const { data: schoolClasses, isLoading: isLoadingSchoolClasses } = useQuery<
     Class[],
     Error
   >({
     queryKey: ["schoolClasses", schoolData?.id],
-    queryFn: () => fetchAllClasses(), // Assumes backend filters by authenticated school admin
+    queryFn: () => fetchAllClasses(),
     enabled: !!schoolData,
     staleTime: 5 * 60 * 1000,
     select: (data) =>
       data?.sort((a, b) => a.full_name.localeCompare(b.full_name)),
   });
 
-  // Derived filters for the query
   const queryFilters: FetchClassTimetablesParams = useMemo(
     () => ({
       academic_year_pk:
@@ -154,7 +149,6 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
     [schoolData, queryFilters]
   );
 
-  // Fetch Class Timetables
   const {
     data: timetablesResponse,
     isLoading: isLoadingTimetables,
@@ -167,14 +161,13 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
     queryFn: () => fetchClassTimetables(queryFilters),
     enabled: !!schoolData,
     keepPreviousData: true,
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 60 * 1000,
   });
 
   const timetables = timetablesResponse?.results ?? [];
   const totalTimetables = timetablesResponse?.count ?? 0;
   const totalPages = Math.ceil(totalTimetables / pagination.pageSize);
 
-  // Mutations
   const deleteMutation = useMutation<void, Error, number>({
     mutationFn: deleteClassTimetable,
     onSuccess: () => {
@@ -193,7 +186,6 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
     onSuccess: (_, timetableId) => {
       toast.success(t("setActiveSuccess"));
       queryClient.invalidateQueries({ queryKey: classTimetablesQueryKey });
-      // If the editor was open for this timetable, you might want to refetch its detail
       queryClient.invalidateQueries({
         queryKey: ["classTimetableDetail", timetableId],
       });
@@ -203,7 +195,6 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
     },
   });
 
-  // Handlers
   const handleOpenModal = useCallback(() => {
     setIsModalOpen(true);
   }, []);
@@ -238,7 +229,7 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
   const handleFilterChange = useCallback(
     (name: keyof typeof filters, value: string) => {
       setFilters((prev) => ({ ...prev, [name]: value }));
-      setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1 on filter change
+      setPagination((prev) => ({ ...prev, page: 1 }));
     },
     []
   );
@@ -315,12 +306,11 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
             <Button
               size="sm"
               onClick={handleOpenModal}
-              disabled={!schoolData || isFetchingTimetables}
+              disabled={!canEdit || !schoolData || isFetchingTimetables}
             >
               <PlusCircle className="mr-2 h-4 w-4" /> {t("addTimetable")}
             </Button>
           </div>
-          {/* Filters */}
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-end">
             <Select
               value={filters.academicYearId}
@@ -386,8 +376,6 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          {" "}
-          {/* Table has its own padding */}
           {isLoadingTimetables && timetables.length === 0 ? (
             <div className="space-y-0">
               {Array.from({ length: 5 }).map((_, i) => (
@@ -471,8 +459,9 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
                                 className="h-8 w-8"
                                 onClick={() => handleSetActiveClick(tt.id)}
                                 disabled={
-                                  setActiveMutation.isLoading &&
-                                  setActiveMutation.variables === tt.id
+                                  !canEdit ||
+                                  (setActiveMutation.isLoading &&
+                                    setActiveMutation.variables === tt.id)
                                 }
                               >
                                 {setActiveMutation.isLoading &&
@@ -499,8 +488,9 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
                               className="h-8 w-8"
                               onClick={() => handleDeleteClick(tt)}
                               disabled={
-                                deleteMutation.isLoading &&
-                                timetableToDelete?.id === tt.id
+                                !canEdit ||
+                                (deleteMutation.isLoading &&
+                                  timetableToDelete?.id === tt.id)
                               }
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
@@ -536,8 +526,6 @@ const ClassTimetablesOverview: React.FC<ClassTimetablesOverviewProps> = ({
         <ClassTimetableCreateModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          // Pass any necessary props like lists of classes/academic years if not fetched inside modal
-          // For creation, schoolId is context.
           schoolId={schoolData.id}
           existingClasses={schoolClasses || []}
           existingAcademicYears={academicYears || []}

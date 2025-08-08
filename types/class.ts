@@ -13,8 +13,6 @@ export interface ClassItem {
   level_display: string;
   stream: string | null;
   stream_display: string | null;
-  sub_stream: string | null;
-  sub_stream_display: string | null;
   section: string;
   section_display: string;
   description: string;
@@ -96,7 +94,6 @@ export interface Class {
   education_system: EducationSystem;
   level: string; // e.g., "form_1"
   stream: string | null;
-  sub_stream: string | null;
   section: string | null; // e.g., "A" or "B"
   description: string;
   full_name: string; // e.g., "Form 1 A"
@@ -159,7 +156,6 @@ export interface ClassDetails {
   education_system: EducationSystem;
   level: string;
   stream: string | null;
-  sub_stream: string | null;
   section: string;
   description: string;
   full_name: string;

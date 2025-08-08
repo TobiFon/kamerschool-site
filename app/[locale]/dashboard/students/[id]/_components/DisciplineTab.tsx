@@ -68,6 +68,7 @@ import {
   getBackendErrorMessage,
 } from "@/lib/utils";
 import PaginationControls from "../../../results/_components/PaginationControls";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Filter choices - same as Management page, keep consistent
 const CATEGORY_CHOICES: {
@@ -104,6 +105,7 @@ const DisciplineTab: React.FC<DisciplineTabProps> = ({ studentId }) => {
   const tSeverity = useTranslations("Discipline.Severity");
   const tCommon = useTranslations("Common");
   const queryClient = useQueryClient(); // Get query client instance
+  const { canEdit } = useCurrentUser();
 
   const defaultPageSize = 15; // Items per page for this tab
 
@@ -393,7 +395,7 @@ const DisciplineTab: React.FC<DisciplineTabProps> = ({ studentId }) => {
           size="sm"
           onClick={handleOpenAddModal}
           className="h-9 text-xs"
-          disabled={isFetching} // Disable while fetching
+          disabled={isFetching || !canEdit} // Disable while fetching
         >
           <PlusCircle className="h-4 w-4 mr-1.5" />
           {t("addRecord")}
@@ -543,8 +545,8 @@ const DisciplineTab: React.FC<DisciplineTabProps> = ({ studentId }) => {
                       record.severity === "high"
                         ? "destructive"
                         : record.severity === "medium"
-                        ? "warning"
-                        : "outline"
+                          ? "warning"
+                          : "outline"
                     }
                     className={cn(
                       "capitalize text-xs flex items-center gap-1",

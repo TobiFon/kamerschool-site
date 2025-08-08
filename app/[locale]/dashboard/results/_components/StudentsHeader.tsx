@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const StudentsHeader = ({
   setSearchQuery,
@@ -36,6 +37,7 @@ const StudentsHeader = ({
   page,
 }) => {
   const t = useTranslations("Results");
+  const { canEdit } = useCurrentUser();
 
   return (
     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -60,6 +62,7 @@ const StudentsHeader = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
+                disabled={!canEdit}
                 variant="outline"
                 className="flex items-center bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm"
               >

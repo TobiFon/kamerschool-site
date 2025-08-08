@@ -29,7 +29,7 @@ import {
   Search,
 } from "lucide-react";
 
-const TeacherSubjectsTab = ({ teacherData }) => {
+const TeacherSubjectsTab = ({ teacherData, canEdit }) => {
   const t = useTranslations("Teachers");
   const router = useRouter();
 
@@ -200,6 +200,7 @@ const TeacherSubjectsTab = ({ teacherData }) => {
             onClick={handleEditSubjects}
             variant={hasSubjects ? "outline" : "default"}
             className="shadow-sm"
+            disabled={!canEdit}
           >
             <PenLine className="h-4 w-4 mr-2" />
             {hasSubjects ? t("editSubjects") : t("assignSubject")}

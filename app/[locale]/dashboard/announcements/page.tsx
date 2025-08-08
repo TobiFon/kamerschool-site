@@ -49,6 +49,7 @@ import PageHeader from "../_components/PageHeader";
 import { formatDate, cn } from "@/lib/utils";
 import { Announcement } from "@/types/announcments";
 import { fetchAnnouncements } from "@/queries/announcments";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Type definition for the response from the API
 interface AnnouncementResponse {
@@ -76,6 +77,7 @@ const AnnouncementsPage: React.FC = () => {
   // Modal states
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [announcementToDelete, setAnnouncementToDelete] = useState<any>(null);
+  const { canEdit } = useCurrentUser();
 
   // Check if any filters are active
   const hasActiveFilters = useMemo(() => {
@@ -191,7 +193,12 @@ const AnnouncementsPage: React.FC = () => {
   const renderAnnouncementActions = (announcement: any) => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          disabled={!canEdit}
+        >
           <MoreHorizontal className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -381,6 +388,7 @@ const AnnouncementsPage: React.FC = () => {
           onClick={handleCreateAnnouncement}
           size="default"
           className="bg-primary hover:bg-primary/90"
+          disabled={!canEdit}
         >
           <Plus className="h-4 w-4 mr-2" />
           {t("createAnnouncement")}

@@ -1,7 +1,7 @@
 // src/app/[locale]/dashboard/students/[id]/page.tsx
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useParams } from "next/navigation"; // Use next/navigation
 import { useRouter } from "@/i18n/routing"; // For navigation

@@ -190,26 +190,49 @@ export async function fetchSchoolPerformance(options = {}) {
 /**
  * Fetches subject performance analysis across the school.
  * @param {Object} [options] - Optional parameters
- * @param {string} [options.timeScope] - Time scope: 'sequence', 'term', or 'year' (default: current active period)
+ * @param {string} [options.timeScope] - Time scope: 'sequence', 'term', or 'year'
  * @param {number} [options.periodId] - Specific sequence_id, term_id, or year_id
  * @param {number} [options.academicYearId] - Specific academic year ID
+ * @param {string} [options.subjectQuery] - A search string to filter subjects by name
+ * @param {string} [options.sortBy] - The field to sort the results by
+ * @param {string} [options.sortDirection] - The sort direction ('asc' or 'desc')
  * @returns {Promise<Object|null>} The subject analysis data or null if not found.
  * @throws {Error} If the request fails for reasons other than not found.
  */
-export async function fetchSchoolSubjectAnalysis(options = {}) {
-  const { timeScope, periodId, academicYearId } = options;
+export async function fetchSchoolSubjectAnalysis(
+  options: {
+    timeScope?: string;
+    periodId?: number | string;
+    academicYearId?: number | string;
+    subjectQuery?: string;
+    sortBy?: string;
+    sortDirection?: string;
+  } = {}
+) {
+  const {
+    timeScope,
+    periodId,
+    academicYearId,
+    subjectQuery,
+    sortBy,
+    sortDirection,
+  } = options;
   const baseUrl = `${process.env.NEXT_PUBLIC_API_URL}/results/metrics/school/subjects/`;
+
   const url = buildUrl(baseUrl, {
     time_scope: timeScope,
     period_id: periodId,
     academic_year_id: academicYearId,
+    subject_query: subjectQuery,
+    sort_by: sortBy,
+    sort_direction: sortDirection,
   });
 
   try {
     const res = await authFetch(url);
     if (res.status === 404) {
       console.warn(
-        `No school subject analysis found for scope: ${timeScope}, period: ${periodId}.`
+        `No school subject analysis found for scope: ${timeScope}, period: ${periodId}, query: ${subjectQuery}.`
       );
       return null;
     }
@@ -224,15 +247,15 @@ export async function fetchSchoolSubjectAnalysis(options = {}) {
     const data = await res.json();
     if (
       data &&
-      ((Array.isArray(data) && data.length === 0) ||
-        (typeof data === "object" &&
-          Object.keys(data).length === 0 &&
-          !Array.isArray(data)))
+      ((Array.isArray(data.subject_analysis) &&
+        data.subject_analysis.length === 0) ||
+        (typeof data === "object" && Object.keys(data).length === 0))
     ) {
       console.warn(
         `Empty school subject analysis (200 OK) for scope: ${timeScope}, period: ${periodId}`
       );
-      return null;
+      // Return the empty structure so the UI can display "No results"
+      return data;
     }
     return data;
   } catch (error) {
@@ -247,7 +270,6 @@ export async function fetchSchoolSubjectAnalysis(options = {}) {
     throw error;
   }
 }
-
 /**
  * Fetches performance comparison across all classes in the school.
  * @param {Object} [options] - Optional parameters

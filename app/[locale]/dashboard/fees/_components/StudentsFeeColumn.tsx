@@ -1,9 +1,8 @@
-// src/app/[locale]/dashboard/finance/_components/columns/StudentsFeeColumn.tsx
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { MoreHorizontal, DollarSign, Eye, XCircle } from "lucide-react"; // Added icons
+import { MoreHorizontal, DollarSign, Eye, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,38 +17,36 @@ import { StudentFee } from "@/types/fees";
 import StatusBadge from "./StatusBadge";
 
 interface StudentFeeColumnsProps {
-  // Use Finance namespace t for specific labels
   t: (key: string, params?: any) => string;
-  // Use Common namespace tc for generic labels like actions
   tc: (key: string, params?: any) => string;
-  onViewDetails: (fee: StudentFee) => void; // Handler to open details view
+  onViewDetails: (fee: StudentFee) => void;
   onMakePayment: (fee: StudentFee) => void;
   onWaive: (fee: StudentFee) => void;
   currency: string;
   locale: string;
+  canEdit: boolean; // Prop to receive permission status
 }
 
 export const StudentFeeColumns = ({
-  // Standardized name
   t,
   tc,
-  onViewDetails, // Receive handler
+  onViewDetails,
   onMakePayment,
   onWaive,
   currency,
   locale,
+  canEdit, // Receive the permission status
 }: StudentFeeColumnsProps): ColumnDef<StudentFee>[] => [
   {
     accessorKey: "student_name",
     header: t("student"),
     cell: ({ row }) => {
-      // Assuming student_id is now available from the serializer update
       const studentId = row.original.student_id;
       return (
         <Link
-          href={`/dashboard/students/${studentId}`} // Link to student profile
+          href={`/dashboard/students/${studentId}`}
           className="font-medium text-blue-600 hover:underline"
-          title={tc("viewStudentProfile")} // Add tooltip text
+          title={tc("viewStudentProfile")}
         >
           {row.getValue("student_name")}
         </Link>
@@ -86,8 +83,7 @@ export const StudentFeeColumns = ({
     accessorKey: "balance",
     header: () => <div className="text-right">{t("balance")}</div>,
     cell: ({ row }) => {
-      // Parse balance string to number for comparison
-      const balance = parseFloat(row.original.balance); // Use original balance string
+      const balance = parseFloat(row.original.balance);
       return (
         <div
           className={`text-right font-medium ${
@@ -101,15 +97,10 @@ export const StudentFeeColumns = ({
     enableSorting: true,
   },
   {
-    accessorKey: "status", // Filter/sort by the key
+    accessorKey: "status",
     header: t("status"),
-    cell: ({ row }) => (
-      // Display using the badge component which uses the key
-      <StatusBadge status={row.original.status} />
-    ),
-    // Filter function using the status key
+    cell: ({ row }) => <StatusBadge status={row.original.status} />,
     filterFn: (row, id, value) => {
-      // value might be a single status or comma-separated
       const statuses = String(value).split(",");
       return statuses.includes(row.original.status);
     },
@@ -119,7 +110,7 @@ export const StudentFeeColumns = ({
     accessorKey: "due_date",
     header: t("dueDate"),
     cell: ({ row }) => {
-      const date = row.original.due_date; // Use original data
+      const date = row.original.due_date;
       return date ? formatDate(date, locale) : "-";
     },
     enableSorting: true,
@@ -135,6 +126,7 @@ export const StudentFeeColumns = ({
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
+            {/* This button is NOT disabled, as "View Details" is always available */}
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">{tc("openMenu")}</span>
               <MoreHorizontal className="h-4 w-4" />
@@ -142,32 +134,32 @@ export const StudentFeeColumns = ({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>{tc("actions")}</DropdownMenuLabel>
-            {/* Call onViewDetails handler */}
+            {/* "View Details" is always visible */}
             <DropdownMenuItem onClick={() => onViewDetails(fee)}>
               <Eye className="mr-2 h-4 w-4" />
               <span>{t("viewDetails")}</span>
             </DropdownMenuItem>
-            {canPay && (
+
+            {/* Conditionally render actions that require edit permissions */}
+            {canEdit && canPay && (
               <DropdownMenuItem onClick={() => onMakePayment(fee)}>
                 <DollarSign className="mr-2 h-4 w-4" />
                 <span>{t("recordPayment")}</span>
               </DropdownMenuItem>
             )}
-            {/* Add Edit Notes action if implemented */}
-            {/* <DropdownMenuItem onClick={() => onEditNotes(fee)}>
-              <Edit className="mr-2 h-4 w-4" />
-              <span>{tc("editNotes")}</span>
-            </DropdownMenuItem> */}
-            <DropdownMenuSeparator />
-            {canWaive && (
-              <DropdownMenuItem
-                onClick={() => onWaive(fee)}
-                className="text-orange-600 focus:text-orange-600 focus:bg-orange-50"
-              >
-                <XCircle className="mr-2 h-4 w-4" />{" "}
-                {/* Different icon for waive */}
-                <span>{t("waiveFee")}</span>
-              </DropdownMenuItem>
+
+            {/* Conditionally render the separator and the waive action */}
+            {canEdit && canWaive && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => onWaive(fee)}
+                  className="text-orange-600 focus:text-orange-600 focus:bg-orange-50"
+                >
+                  <XCircle className="mr-2 h-4 w-4" />
+                  <span>{t("waiveFee")}</span>
+                </DropdownMenuItem>
+              </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>

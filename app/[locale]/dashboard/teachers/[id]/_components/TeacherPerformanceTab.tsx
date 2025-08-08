@@ -65,11 +65,19 @@ const TeacherPerformanceTab = ({
 
   const { overall_metrics, subject_breakdown, term_trends } = data;
 
-  // Helper function to determine color based on score
+  // Helper function to determine color based on score (out of 20)
   const getScoreColor = (score: number) => {
-    if (score >= 85) return "text-green-600";
-    if (score >= 75) return "text-blue-600";
-    if (score >= 65) return "text-yellow-600";
+    if (score >= 17) return "text-green-600"; // 85% of 20
+    if (score >= 14) return "text-blue-600"; // 75% of 20
+    if (score >= 10) return "text-yellow-600"; // 65% of 20
+    return "text-red-600";
+  };
+
+  // Helper function to determine color based on pass rate (percentage)
+  const getPassRateColor = (passRate: number) => {
+    if (passRate >= 85) return "text-green-600";
+    if (passRate >= 75) return "text-blue-600";
+    if (passRate >= 50) return "text-yellow-600"; // Changed from 65 to 50
     return "text-red-600";
   };
 
@@ -94,7 +102,7 @@ const TeacherPerformanceTab = ({
             >
               {overall_metrics.average_score.toFixed(1)}
             </div>
-            <p className="text-xs text-gray-500 mt-1">{t("outOf100")}</p>
+            <p className="text-xs text-gray-500 mt-1">{t("outOf20")}</p>
           </CardContent>
         </Card>
 
@@ -109,7 +117,7 @@ const TeacherPerformanceTab = ({
               </div>
             </div>
             <div
-              className={`text-3xl font-bold ${getScoreColor(
+              className={`text-3xl font-bold ${getPassRateColor(
                 overall_metrics.pass_rate
               )}`}
             >
@@ -348,7 +356,11 @@ const TeacherPerformanceTab = ({
                         <TableCell className={getScoreColor(trend.avg_score)}>
                           {trend.avg_score.toFixed(1)}
                         </TableCell>
-                        <TableCell>{trend.pass_rate.toFixed(1)}%</TableCell>
+                        <TableCell
+                          className={getPassRateColor(trend.pass_rate)}
+                        >
+                          {trend.pass_rate.toFixed(1)}%
+                        </TableCell>
                         <TableCell>
                           {scoreChange !== null && (
                             <span
@@ -426,7 +438,15 @@ const TeacherPerformanceTab = ({
                         >
                           {t("avg")}: {subjectAvgScore.toFixed(1)}
                         </span>
-                        <span className="rounded-full px-3 py-1 text-xs font-medium bg-blue-100 text-blue-600">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-medium ${getPassRateColor(
+                            subjectPassRate
+                          )
+                            .replace("text-", "bg-")
+                            .replace("600", "100")} ${getPassRateColor(
+                            subjectPassRate
+                          )}`}
+                        >
                           {t("pass")}: {subjectPassRate.toFixed(1)}%
                         </span>
                       </div>
@@ -467,7 +487,9 @@ const TeacherPerformanceTab = ({
                               >
                                 {perf.avg_score.toFixed(1)}
                               </TableCell>
-                              <TableCell>
+                              <TableCell
+                                className={getPassRateColor(perf.pass_rate)}
+                              >
                                 {perf.pass_rate.toFixed(1)}%
                               </TableCell>
                               <TableCell>{perf.total_students}</TableCell>

@@ -26,15 +26,15 @@ export async function generateMetadata({
   };
 
   return {
-    title: tMeta("title"), // e.g., "Contact Kamerschools | Get in Touch"
-    description: tMeta("description"), // e.g., "Have questions about Kamerschools? Contact us for support, inquiries, or to request a demo of our school management software for Cameroon."
+    title: tMeta("title"), // e.g., "Contact KamerSchool | Get in Touch"
+    description: tMeta("description"), // e.g., "Have questions about KamerSchool? Contact us for support, inquiries, or to request a demo of our school management software for Cameroon."
     openGraph: {
       title: tMeta("ogTitle"),
       description: tMeta("ogDescription"),
       type: safeGet(tRoot, "openGraph.type", "website"),
-      siteName: safeGet(tRoot, "openGraph.siteName", "Kamerschools"),
+      siteName: safeGet(tRoot, "openGraph.siteName", "KamerSchool"),
       locale: locale,
-      // url: `https://www.kamerschools.com/${locale}/contact`, // Your canonical URL
+      // url: `https://www.KamerSchool.com/${locale}/contact`, // Your canonical URL
       // images: [ // Consider a specific OG image for the contact page if desired
       //   {
       //     url: "/og-images/contact-us.png",

@@ -8,6 +8,7 @@ import { ArrowLeft, Edit, GraduationCap, UserCheck, UserX } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "next-intl";
 import { StudentOverview } from "@/types/students"; // Import the overview type
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface HeaderProps {
   studentData: StudentOverview;
@@ -17,6 +18,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ studentData, onEditClick }) => {
   const t = useTranslations("Students");
   const tStatus = useTranslations("Status"); // For status display potentially
+  const { canEdit } = useCurrentUser();
 
   const getStatusProps = (statusDisplay: string | undefined) => {
     const lowerStatus = statusDisplay?.toLowerCase() ?? "unknown";
@@ -101,10 +103,10 @@ const Header: React.FC<HeaderProps> = ({ studentData, onEditClick }) => {
                       statusProps.variant === "success"
                         ? "bg-green-500/90 text-white"
                         : statusProps.variant === "destructive"
-                        ? "bg-red-500/90 text-white"
-                        : statusProps.variant === "outline"
-                        ? "bg-gray-500/80 text-white"
-                        : "bg-white/20 text-white/90"
+                          ? "bg-red-500/90 text-white"
+                          : statusProps.variant === "outline"
+                            ? "bg-gray-500/80 text-white"
+                            : "bg-white/20 text-white/90"
                     }`}
                 >
                   {statusProps.icon}
@@ -118,6 +120,7 @@ const Header: React.FC<HeaderProps> = ({ studentData, onEditClick }) => {
           <div className="flex flex-shrink-0 gap-3 mt-4 md:mt-0">
             <Button
               variant="secondary"
+              disabled={!canEdit}
               size="sm"
               className="bg-white text-blue-700 hover:bg-blue-50 focus:ring-blue-500 shadow-sm"
               onClick={onEditClick}

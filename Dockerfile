@@ -1,24 +1,46 @@
-FROM node:22.15.0-alpine
+# Build stage
+FROM node:22.15.0-alpine AS builder
 
 WORKDIR /app
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps --silent
+COPY . .
+RUN npm run build
 
-# Set environment variables for build
+# Production stage
+FROM node:22.15.0-alpine AS runner
+
+WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy package files
-COPY ./package*.json ./
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps --only=production --silent
 
-# Install dependencies
-RUN npm ci --only=production --legacy-peer-deps
-
-# Copy application code
-COPY . .
-
-# Build the application
-RUN npm run build
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
 
 EXPOSE 3000
-
-# Start the application
 CMD ["npm", "start"]
+
+# FROM node:22.15.0-alpine
+
+# WORKDIR /app
+
+# # Set environment variables for development
+# ENV NODE_ENV=development
+# ENV NEXT_TELEMETRY_DISABLED=1
+
+# # Copy package files
+# COPY ./package*.json ./
+
+# # # Install ALL dependencies (including devDependencies)
+# # RUN npm ci --legacy-peer-deps
+
+# # Copy application code
+# COPY . .
+
+# EXPOSE 3000
+
+# # Start the application in development mode
+# CMD ["npm", "run", "dev"]

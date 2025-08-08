@@ -31,6 +31,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { exportToCSV, exportToPDF } from "@/lib/utils";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
@@ -59,7 +60,7 @@ const StudentsTab: React.FC<StudentsTabProps> = ({ classData, schoolData }) => {
     key: "name",
     direction: "ascending",
   });
-
+  const { canEdit } = useCurrentUser();
   const handleSort = (key: string) => {
     let direction = "ascending";
     if (sortConfig.key === key && sortConfig.direction === "ascending") {
@@ -199,16 +200,6 @@ const StudentsTab: React.FC<StudentsTabProps> = ({ classData, schoolData }) => {
                 {filteredAndSortedStudents.length}
               </Badge>
             </h3>
-
-            <Button
-              variant="default"
-              size="sm"
-              className="bg-primary hover:bg-primary/90 text-white gap-2"
-              onClick={handleAddStudent}
-            >
-              <UserPlus className="h-4 w-4" />
-              {t("addStudent")}
-            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

@@ -48,6 +48,7 @@ import {
   updateEnrollmentWorkflow,
 } from "@/queries/promotions";
 import TransfersTabContent from "./_components/TransfersTabContent";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const queryClient = new QueryClient();
 const SELECT_PLACEHOLDER = "__placeholder__";
@@ -68,6 +69,7 @@ function EnrollmentManagementPage() {
   const [currentWorkflowForModal, setCurrentWorkflowForModal] = useState(null);
   const [currentEnrollmentForEdit, setCurrentEnrollmentForEdit] =
     useState(null);
+  const { canEdit } = useCurrentUser();
 
   // --- Data Fetching ---
   const { data: academicYearsData, isLoading: isLoadingYears } = useQuery({
@@ -253,6 +255,15 @@ function EnrollmentManagementPage() {
       handleApiSuccess("studentEnrolled", {
         studentName: data.student?.full_name,
       });
+      queryClientHook.invalidateQueries({
+        queryKey: ["subjectSequenceScores"],
+      });
+      const classId = data?.enrollment?.assigned_class;
+      if (classId) {
+        queryClientHook.invalidateQueries({
+          queryKey: ["classSubjects", classId],
+        });
+      }
       setNewStudentModalOpen(false);
     },
     onError: (error) => handleApiError(error, "enrollingNewStudent"),
@@ -368,6 +379,17 @@ function EnrollmentManagementPage() {
     setSelectedClassId(newClassId);
   }, []);
 
+  // --- Tab Change Handler with Permission Check ---
+  const handleTabChange = useCallback(
+    (value) => {
+      // Only allow tab switching for overview tab or if user has edit permissions
+      if (value === "overview" || canEdit) {
+        setActiveTab(value);
+      }
+    },
+    [canEdit]
+  );
+
   // --- Render Logic ---
   if (isLoadingYears) {
     return (
@@ -383,26 +405,31 @@ function EnrollmentManagementPage() {
       id: "overview",
       label: t("tabs.overview"),
       icon: <BarChart3 className="h-4 w-4 mr-2" />,
+      allowReadOnly: true, // Overview tab is always accessible
     },
     {
       id: "workflows",
       label: t("tabs.workflows"),
       icon: <ArrowUpCircle className="h-4 w-4 mr-2" />,
+      allowReadOnly: false, // Requires edit permissions
     },
     {
       id: "bulk",
       label: t("tabs.bulk"),
       icon: <Users className="h-4 w-4 mr-2" />,
+      allowReadOnly: false, // Requires edit permissions
     },
     {
       id: "enrolled",
       label: t("tabs.enrolled"),
       icon: <Edit className="h-4 w-4 mr-2" />,
+      allowReadOnly: false, // Requires edit permissions
     },
     {
       id: "transfers",
       label: t("tabs.transfers"),
       icon: <ArrowLeftRight className="h-4 w-4 mr-2" />,
+      allowReadOnly: false, // Requires edit permissions
     },
   ];
 
@@ -429,6 +456,7 @@ function EnrollmentManagementPage() {
                   size="sm"
                   onClick={() => setNewStudentModalOpen(true)}
                   className="whitespace-nowrap h-10 px-4 shadow-sm font-medium bg-primary"
+                  disabled={!canEdit}
                 >
                   <UserPlus className="mr-2 h-4 w-4" />{" "}
                   {t("buttons.newStudent")}
@@ -441,6 +469,7 @@ function EnrollmentManagementPage() {
                     size="sm"
                     onClick={handleInitializeWorkflows}
                     disabled={
+                      !canEdit ||
                       !selectedFromYearId ||
                       !selectedToYearId ||
                       initWorkflowsMutation.isLoading ||
@@ -588,7 +617,7 @@ function EnrollmentManagementPage() {
         <div className="bg-white rounded-xl shadow-sm border border-slate-200">
           <Tabs
             value={activeTab}
-            onValueChange={setActiveTab}
+            onValueChange={handleTabChange}
             className="w-full"
           >
             <div className="border-b border-slate-200">
@@ -597,7 +626,8 @@ function EnrollmentManagementPage() {
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className="flex-1 h-full data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none text-slate-600 data-[state=active]:text-blue-700 px-4 font-medium text-sm"
+                    disabled={!tab.allowReadOnly && !canEdit}
+                    className="flex-1 h-full data-[state=active]:bg-white data-[state=active]:border-b-2 data-[state=active]:border-blue-600 data-[state=active]:shadow-none rounded-none text-slate-600 data-[state=active]:text-blue-700 px-4 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:text-slate-400"
                   >
                     <div className="flex items-center justify-center">
                       {React.cloneElement(tab.icon, {

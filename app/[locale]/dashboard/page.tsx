@@ -21,10 +21,9 @@ import {
   PointElement,
   LineElement,
 } from "chart.js";
-import { useQuery, useQueries } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { fetchSchoolMetrics } from "@/queries/schoolmetrix";
 import { fetchCalendarEvents } from "@/queries/events";
-import { fetchTeachers, fetchTeacherPerformance } from "@/queries/teachers";
 import { QuickActions } from "./_components/QuickAction";
 import AttendanceDashboard from "./_components/AttendanceOverviewCard";
 import { fetchAnnouncements } from "@/queries/announcments";
@@ -101,23 +100,6 @@ export default function Dashboard() {
   });
 
   const {
-    data: teachersData,
-    isLoading: teachersLoading,
-    error: teachersError,
-  } = useQuery({
-    queryKey: ["teachers"],
-    queryFn: fetchTeachers,
-  });
-
-  const teacherPerformanceQueries = useQueries({
-    queries:
-      teachersData?.map((teacher) => ({
-        queryKey: ["teacherPerformance", teacher.id],
-        queryFn: () => fetchTeacherPerformance(teacher.id),
-      })) || [],
-  });
-
-  const {
     data: schoolData,
     isLoading: schoolDataIsLoading, // Renamed for clarity
     error: schoolDataError,
@@ -125,13 +107,6 @@ export default function Dashboard() {
     queryKey: ["school"],
     queryFn: () => fetchSchool(),
   });
-
-  const isTeachersPerformanceLoading = teacherPerformanceQueries.some(
-    (query) => query.isLoading
-  );
-  const teachersPerformanceError = teacherPerformanceQueries.find(
-    (query) => query.error
-  )?.error;
 
   const handleTimeChange = (newTimeScope: string) => {
     setTimeScope(newTimeScope);
@@ -165,7 +140,7 @@ export default function Dashboard() {
       label: t("quickActions.addStudent"),
       icon: <UserPlus className="h-4 w-4" />,
       className: "bg-purple-600 hover:bg-purple-700 text-white",
-      onClick: () => console.log("add student clicked"),
+      onClick: () => router.push("/dashboard/enrollments"),
     },
     {
       label: t("quickActions.scheduleEvent"),

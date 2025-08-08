@@ -11,7 +11,7 @@ import {
   Facebook,
   Twitter,
   Linkedin,
-  Instagram,
+  Youtube,
 } from "lucide-react";
 
 export const Icons = {
@@ -23,10 +23,59 @@ export const Icons = {
   settings: Settings,
   discipline: AlertOctagon,
   timetable: CalendarRange,
-  facebook: Facebook,
   twitter: Twitter,
   linkedin: Linkedin,
-  instagram: Instagram,
+
+  youtube: (props: LucideProps) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M2.5 17a24.12 24.12 0 0 1 0-10C2.5 6 4.5 4 7 4h10c2.5 0 4.5 2 4.5 4.5v5c0 2.5-2 4.5-4.5 4.5H7c-2.5 0-4.5-2-4.5-4.5z" />
+      <path d="m10 15 5-3-5-3z" />
+    </svg>
+  ),
+  whatsapp: (props: LucideProps) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    </svg>
+  ),
+  facebook: (props: LucideProps) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  ),
+
   NavIcon: (props: LucideProps) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, ArrowUpDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface ScoresTableProps {
   processedResults: any[]; // assuming processedResults is an array of objects with student_id, student_name, score, rank, is_published, is_absent, etc.
@@ -27,6 +28,7 @@ const ScoresTable: React.FC<ScoresTableProps> = ({
   getAverageBg,
 }) => {
   const t = useTranslations("Results");
+  const { canEdit } = useCurrentUser();
 
   return (
     <div className="rounded-lg border overflow-hidden">
@@ -155,6 +157,7 @@ const ScoresTable: React.FC<ScoresTableProps> = ({
                 <td className="p-4">
                   <Button
                     variant="outline"
+                    disabled={!canEdit}
                     size="sm"
                     onClick={() => onToggle(result?.student_id)}
                   >

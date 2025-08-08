@@ -29,6 +29,7 @@ import SearchAndExportYearly from "./YearlySearchExport";
 import YearlySubjectDashboard from "./YearlyResultsDasbhoard";
 import YearlyScoresTable from "./YearlyScoresTable";
 import { exportYearlySubjectScoresToPDF } from "@/lib/exportPdfs";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface YearlySubjectsResultsTabProps {
   academicYearId: number;
@@ -50,6 +51,7 @@ const YearlySubjectsResultsTab: React.FC<YearlySubjectsResultsTabProps> = ({
   const [pageSize] = useState<number>(50);
   const [selectedStudentIds, setSelectedStudentIds] = useState<number[]>([]);
   const tp = useTranslations("pdfs");
+  const { canEdit } = useCurrentUser();
 
   // Calculation state
   const [isCalculating, setIsCalculating] = useState(false);

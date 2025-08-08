@@ -34,7 +34,7 @@ interface ImageTransformations
 
 /**
  * Generates a Cloudinary video URL.
- * @param publicId The public ID of the video in Cloudinary (e.g., "kamerschools/en/mockups/dashboard_optimized")
+ * @param publicId The public ID of the video in Cloudinary (e.g., "KamerSchool/en/mockups/dashboard_optimized")
  * @param transformations Optional transformation parameters.
  * @returns The full Cloudinary video URL.
  */
@@ -66,10 +66,10 @@ export function getCloudinaryVideoUrl(
   // Remove trailing comma if any transform was added
   transformString = transformString.replace(/,$/, "");
 
-  // Construct the URL, assuming your videos are in 'kamerschools' folder, then locale folder
+  // Construct the URL, assuming your videos are in 'KamerSchool' folder, then locale folder
   // Example publicId: 'en/mockups/dashboard-clip' (without the .mp4 extension)
-  // If you uploaded 'dashboard-clip.mp4' into 'kamerschools/en/mockups/',
-  // then publicId would be 'kamerschools/en/mockups/dashboard-clip'
+  // If you uploaded 'dashboard-clip.mp4' into 'KamerSchool/en/mockups/',
+  // then publicId would be 'KamerSchool/en/mockups/dashboard-clip'
 
   return `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/video/upload/${transformString}/${publicId}`;
 }
@@ -81,7 +81,7 @@ export function getCloudinaryVideoUrl(
  * @returns The full Cloudinary image URL.
  */
 export function getCloudinaryImageUrl(
-  publicId: string, // e.g., kamerschools/en/images/dashboard-poster
+  publicId: string, // e.g., KamerSchool/en/images/dashboard-poster
   transformations: ImageTransformations = {}
 ): string {
   if (!CLOUDINARY_CLOUD_NAME) {
@@ -111,12 +111,12 @@ export function getCloudinaryImageUrl(
   transformString = transformString.replace(/,$/, "");
 
   // If publicId is for a video and you want a poster from it:
-  // e.g. publicId: 'kamerschools/en/mockups/dashboard-clip'
-  // To get a poster: `https://res.cloudinary.com/.../video/upload/w_800,f_jpg/kamerschools/en/mockups/dashboard-clip.jpg`
+  // e.g. publicId: 'KamerSchool/en/mockups/dashboard-clip'
+  // To get a poster: `https://res.cloudinary.com/.../video/upload/w_800,f_jpg/KamerSchool/en/mockups/dashboard-clip.jpg`
   // Notice the resource_type is 'video' and the format extension '.jpg' is added at the end of publicId for posters.
 
   // This function assumes publicId refers to an image asset or a video asset from which to extract a frame.
-  // If publicId is `kamerschools/en/mockups/dashboard-clip` (a video) and format is 'jpg'
+  // If publicId is `KamerSchool/en/mockups/dashboard-clip` (a video) and format is 'jpg'
   // it will produce a poster URL.
   const resourceType =
     format === "auto" ||
@@ -127,8 +127,8 @@ export function getCloudinaryImageUrl(
 
   // A common way to get a poster from a video is to specify the format (e.g., .jpg)
   // and Cloudinary handles it.
-  // If publicId = 'kamerschools/en/mockups/dashboard-clip', then the final URL for poster would be
-  // .../video/upload/w_800,q_auto,f_jpg/kamerschools/en/mockups/dashboard-clip.jpg
+  // If publicId = 'KamerSchool/en/mockups/dashboard-clip', then the final URL for poster would be
+  // .../video/upload/w_800,q_auto,f_jpg/KamerSchool/en/mockups/dashboard-clip.jpg
   // We append .${format} if format is not auto and publicId doesn't have an extension
 
   let finalPublicId = publicId;

@@ -58,6 +58,7 @@ import { toast } from "sonner";
 import { createAnnouncement, updateAnnouncement } from "@/queries/announcments";
 import { fetchAllClasses, fetchClasses } from "@/queries/class";
 import { ClassesResponse } from "@/types/class";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Validation schema
 const announcementFormSchema = z.object({
@@ -85,6 +86,7 @@ export default function AnnouncementForm({
   const queryClient = useQueryClient();
   const router = useRouter();
   const [formProgress, setFormProgress] = useState(0);
+  const { canEdit } = useCurrentUser();
 
   // Fetch classes with infinite query
   const {
@@ -212,10 +214,10 @@ export default function AnnouncementForm({
               {formProgress < 50
                 ? t("gettingStarted")
                 : formProgress < 80
-                ? t("almostThere")
-                : formProgress === 100
-                ? t("readyToSubmit")
-                : t("inProgress")}
+                  ? t("almostThere")
+                  : formProgress === 100
+                    ? t("readyToSubmit")
+                    : t("inProgress")}
             </Badge>
           </div>
 
@@ -426,6 +428,7 @@ export default function AnnouncementForm({
                 type="submit"
                 disabled={
                   mutation.isPending ||
+                  !canEdit ||
                   (watchTarget === "class" &&
                     (!watchTargetClasses?.length ||
                       watchTargetClasses.length === 0))

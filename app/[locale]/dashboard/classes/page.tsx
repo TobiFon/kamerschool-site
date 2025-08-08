@@ -44,6 +44,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchClasses, deleteClass } from "@/queries/class";
 import { ClassesResponse } from "@/types/class";
 import PageHeader from "../_components/PageHeader";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const ClassesPage: React.FC = () => {
   const t = useTranslations("Classes");
@@ -53,6 +54,7 @@ const ClassesPage: React.FC = () => {
   const [classToDelete, setClassToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
+  const { canEdit } = useCurrentUser();
 
   // fetch classes based on the selected education system
   const { data, isLoading, error } = useQuery<ClassesResponse>({
@@ -123,6 +125,7 @@ const ClassesPage: React.FC = () => {
           <PageHeader title={t("classesTitle")} />
         </div>
         <Button
+          disabled={!canEdit}
           className="bg-primary hover:bg-primary/90 transition-colors"
           onClick={handleCreateClass}
         >

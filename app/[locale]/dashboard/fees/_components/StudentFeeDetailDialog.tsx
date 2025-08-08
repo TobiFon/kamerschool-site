@@ -9,14 +9,14 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogClose, // Import Close
+  // DialogClose, // No longer needed here if DialogContent provides its own
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button"; // Import Button for close
-import { X } from "lucide-react"; // Import X for close button
+// import { Button } from "@/components/ui/button"; // No longer needed for a manual close button here
+// import { X } from "lucide-react"; // No longer needed for a manual close button here
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { StudentFee, Payment } from "@/types/fees";
+import { StudentFee, Payment } from "@/types/fees"; // Ensure this type matches the backend structure
 import { fetchStudentFeeById } from "@/queries/fees";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -72,18 +72,13 @@ const StudentFeeDetailDialog: React.FC<StudentFeeDetailDialogProps> = ({
       <DialogContent className="sm:max-w-[650px] max-h-[90vh] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>{t("studentFeeDetails")}</DialogTitle>
-          {/* Add Close button */}
-          <DialogClose asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-              onClick={onClose}
-            >
-              <X className="h-4 w-4" />
-              <span className="sr-only">{tc("close")}</span>
-            </Button>
-          </DialogClose>
+          {/*
+            The manual close button was removed from here.
+            DialogContent usually provides its own close button in the top-right corner.
+            If DialogContent does NOT provide a default close button,
+            you might need to re-add a DialogClose mechanism,
+            but the issue description ("first 2 close icons") implies a duplicate.
+          */}
         </DialogHeader>
 
         <ScrollArea className="flex-grow pr-6 -mr-6">
@@ -101,13 +96,13 @@ const StudentFeeDetailDialog: React.FC<StudentFeeDetailDialogProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
                   {renderDetailItem(
                     t("studentName"),
-                    feeDetail.student_details?.full_name
+                    feeDetail.student?.full_name // UPDATED PATH
                   )}
                   {renderDetailItem(
                     t("matricule"),
-                    feeDetail.student_details?.matricule
+                    feeDetail.student?.matricule // UPDATED PATH
                   )}
-                  {/* Add more student details if needed */}
+                  {/* Add more student details if needed from feeDetail.student */}
                 </div>
               </section>
 
@@ -178,11 +173,11 @@ const StudentFeeDetailDialog: React.FC<StudentFeeDetailDialogProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
                   {renderDetailItem(
                     t("class"),
-                    feeDetail.class_fee_details?.class_name
+                    feeDetail.class_fee?.class_name // UPDATED PATH
                   )}
                   {renderDetailItem(
                     t("academicYear"),
-                    feeDetail.class_fee_details?.academic_year_name
+                    feeDetail.class_fee?.academic_year_name // UPDATED PATH
                   )}
                 </div>
               </section>

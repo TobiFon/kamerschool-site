@@ -1,6 +1,7 @@
+// app/dashboard/social-feed/_components/PostCard.tsx
 "use client";
 import { useState } from "react";
-import { useTranslations } from "next-intl"; // Import useTranslations
+import { useTranslations } from "next-intl";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   deletePost,
@@ -10,8 +11,27 @@ import {
   likePost,
   unlikePost,
 } from "@/queries/posts";
-import { Post } from "@/types/posts";
+import { Post, Media } from "@/types/posts";
 import { toast } from "sonner";
+import Image from "next/image";
+import { format, formatDistanceToNow } from "date-fns";
+import {
+  Heart,
+  MessageCircle,
+  Eye,
+  Edit,
+  Trash2,
+  MoreVertical,
+  Calendar,
+  AlertCircle,
+  FileCheck,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Loader2,
+  PlayCircle,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -29,292 +49,161 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { format, formatDistanceToNow } from "date-fns";
-import {
-  Heart,
-  MessageCircle,
-  Share,
-  Eye,
-  Edit,
-  Trash2,
-  MoreVertical,
-  Calendar,
-  Send,
-  Copy,
-  Globe,
-  AlertCircle,
-  FileCheck,
-  ChevronDown,
-  ChevronUp,
-  BookmarkPlus,
-} from "lucide-react";
-import Image from "next/image";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 
 interface PostCardProps {
   post: Post;
   onEdit: (post: Post) => void;
   expanded?: boolean;
   onExpandToggle?: () => void;
+  canEdit: boolean;
 }
+
+const MediaGrid = ({ media, title }: { media: Media[]; title: string }) => {
+  if (!media || media.length === 0) return null;
+
+  return (
+    <div className="mt-4 rounded-lg overflow-hidden border">
+      <div
+        className={cn(
+          "grid gap-1",
+          media.length > 1 ? "grid-cols-2" : "grid-cols-1"
+        )}
+      >
+        {media.slice(0, 4).map((m, index) => (
+          <div
+            key={m.id}
+            className={cn(
+              "relative aspect-video bg-gray-100 dark:bg-gray-800",
+              media.length === 3 && index === 0 && "row-span-2"
+            )}
+          >
+            <Image
+              src={m.thumbnail || m.processed_file || m.file}
+              alt={`${title} - media ${index + 1}`}
+              fill
+              className="object-cover"
+            />
+            {!m.is_processed && (
+              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white">
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span className="text-xs mt-2">Processing</span>
+              </div>
+            )}
+            {m.media_type === "video" && m.is_processed && (
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                <PlayCircle className="h-12 w-12 text-white/80" />
+              </div>
+            )}
+            {media.length > 4 && index === 3 && (
+              <div className="absolute inset-0 bg-black/70 flex items-center justify-center text-white font-bold text-2xl">
+                +{media.length - 4}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export function PostCard({
   post,
   onEdit,
   expanded = false,
   onExpandToggle,
+  canEdit,
 }: PostCardProps) {
-  const t = useTranslations("PostCard"); // Fetch translations
+  const t = useTranslations("PostCard");
   const queryClient = useQueryClient();
-  const [liked, setLiked] = useState(post.user_has_liked || false);
-  const [likesCount, setLikesCount] = useState(post.likes_count || 0);
-  const [mediaExpanded, setMediaExpanded] = useState(false);
+
+  const mutationOptions = {
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "An error occurred");
+    },
+  };
 
   const deleteMutation = useMutation({
     mutationFn: deletePost,
+    ...mutationOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
       toast.success(t("toast.deleteSuccess"));
-    },
-    onError: (error: Error) => {
-      toast.error(t("toast.deleteError", { message: error.message }));
+      mutationOptions.onSuccess();
     },
   });
-
   const publishMutation = useMutation({
     mutationFn: publishPost,
+    ...mutationOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
       toast.success(t("toast.publishSuccess"));
-    },
-    onError: (error: Error) => {
-      toast.error(t("toast.publishError", { message: error.message }));
+      mutationOptions.onSuccess();
     },
   });
-
   const unpublishMutation = useMutation({
     mutationFn: unpublishPost,
+    ...mutationOptions,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
       toast.success(t("toast.unpublishSuccess"));
-    },
-    onError: (error: Error) => {
-      toast.error(t("toast.unpublishError", { message: error.message }));
+      mutationOptions.onSuccess();
     },
   });
-
+  const likeMutation = useMutation({
+    mutationFn: (id: number) =>
+      post.user_has_liked ? unlikePost(id) : likePost(id),
+    ...mutationOptions,
+  });
   const trackViewMutation = useMutation({
     mutationFn: trackPostView,
-    onSuccess: (data) => {
-      queryClient.setQueryData(["posts"], (oldData: any) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          results: oldData.results.map((p: Post) =>
-            p.id === post.id ? { ...p, views_count: data.views_count } : p
-          ),
-        };
-      });
-      toast.success(t("toast.shareSuccess"));
-    },
+    ...mutationOptions,
   });
-
-  const likeMutation = useMutation({
-    mutationFn: (id: number) => (liked ? unlikePost(id) : likePost(id)),
-    onSuccess: () => {
-      setLiked(!liked);
-      setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
-    },
-    onError: (error: Error) => {
-      toast.error(
-        t("toast.likeError", {
-          action: liked ? "unlike" : "like",
-          message: error.message,
-        })
-      );
-    },
-  });
-
-  const handleDelete = () => {
-    toast.promise(
-      new Promise((resolve, reject) => {
-        deleteMutation.mutate(post.id, {
-          onSuccess: resolve,
-          onError: reject,
-        });
-      }),
-      {
-        loading: t("toast.deleting"),
-        success: t("toast.deleteSuccess"),
-        error: t("toast.deleteFailed"),
-      }
-    );
-  };
-
-  const handlePublishToggle = () => {
-    if (post.is_published) {
-      unpublishMutation.mutate(post.id);
-    } else {
-      publishMutation.mutate(post.id);
-    }
-  };
-
-  const handleLikeToggle = () => {
-    likeMutation.mutate(post.id);
-  };
 
   const handleShare = () => {
-    const postUrl = `${window.location.origin}/posts/${post.id}`;
+    const postUrl = `${window.location.origin}/post/${post.id}`; // Assuming a public post URL structure
     navigator.clipboard.writeText(postUrl).then(() => {
+      toast.success(t("toast.shareSuccess"));
       trackViewMutation.mutate(post.id);
     });
   };
 
-  const truncateContent = (content: string, maxLength = 280) => {
+  const truncateContent = (content: string, maxLength = 350) => {
     if (!content) return t("noContent");
     if (content.length <= maxLength || expanded) return content;
     return `${content.substring(0, maxLength)}...`;
   };
 
-  const renderMedia = () => {
-    if (!post.media || post.media.length === 0) return null;
-
-    const visibleMedia = mediaExpanded ? post.media : post.media.slice(0, 4);
-
-    if (post.media.length === 1) {
-      return (
-        <div className="mt-4 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800">
-          {post.media[0].media_type === "image" ? (
-            <div className="relative w-full aspect-video">
-              <Image
-                src={`${post.media[0].file}`}
-                alt={post.title || "Post image"}
-                layout="fill"
-                objectFit="cover"
-                className="transition-transform hover:scale-105 duration-300"
-              />
-            </div>
-          ) : (
-            <video
-              src={`${post.media[0].file}`}
-              className="w-full object-cover rounded-lg"
-              controls
-              poster="/video-thumbnail.jpg"
-            />
-          )}
-        </div>
-      );
-    }
-
-    return (
-      <div className="mt-4">
-        <div
-          className={`grid ${
-            post.media.length === 2
-              ? "grid-cols-2"
-              : post.media.length >= 3
-              ? "grid-cols-2"
-              : "grid-cols-1"
-          } gap-2`}
-        >
-          {visibleMedia.map((media, index) => (
-            <div
-              key={index}
-              className={`relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-800 ${
-                index === 0 && post.media.length === 3 ? "row-span-2" : ""
-              }`}
-            >
-              {media.media_type === "image" ? (
-                <div className="aspect-video relative">
-                  <Image
-                    src={`${media.file}`}
-                    alt={`${post.title || "Post"} image ${index + 1}`}
-                    layout="fill"
-                    objectFit="cover"
-                    className="transition-transform hover:scale-105 duration-300"
-                  />
-                </div>
-              ) : (
-                <video
-                  src={`${media.file}`}
-                  className="w-full aspect-video object-cover"
-                  controls
-                  poster="/video-thumbnail.jpg"
-                />
-              )}
-              {!mediaExpanded && index === 3 && post.media.length > 4 && (
-                <div
-                  className="absolute inset-0 bg-black bg-opacity-70 flex items-center justify-center text-white text-xl font-bold cursor-pointer"
-                  onClick={() => setMediaExpanded(true)}
-                >
-                  +{post.media.length - 4}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {post.media.length > 4 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-2 w-full text-gray-500"
-            onClick={() => setMediaExpanded(!mediaExpanded)}
-          >
-            {mediaExpanded ? (
-              <>
-                <ChevronUp className="h-4 w-4 mr-2" /> {t("showLess")}
-              </>
-            ) : (
-              <>
-                <ChevronDown className="h-4 w-4 mr-2" />{" "}
-                {t("showAllMedia", { count: post.media.length })}
-              </>
-            )}
-          </Button>
-        )}
-      </div>
-    );
-  };
-
-  const formattedDate = post.published_at || post.created_at;
-  const timeAgo = formatDistanceToNow(new Date(formattedDate), {
-    addSuffix: true,
-  });
-  const exactDate = format(new Date(formattedDate), "PPP 'at' p");
+  const timeAgo = formatDistanceToNow(
+    new Date(post.published_at || post.created_at),
+    { addSuffix: true }
+  );
+  const exactDate = format(
+    new Date(post.published_at || post.created_at),
+    "PPP 'at' p"
+  );
 
   return (
-    <Card className="mb-6 overflow-hidden transition-all duration-300 hover:shadow-md">
+    <Card className="mb-6 overflow-hidden transition-all duration-300 hover:shadow-lg dark:hover:border-primary/20">
       <CardHeader className="pt-4 pb-2">
         <div className="flex justify-between items-start">
           <div className="flex items-start gap-3">
-            <Avatar className="h-10 w-10 border-2 border-primary/10">
-              <AvatarImage src="/fallback.jpeg" alt="Profile" />
-              <AvatarFallback>
-                {post.user?.name?.charAt(0) || "U"}
-              </AvatarFallback>
+            <Avatar className="h-11 w-11 border-2 border-primary/10">
+              <AvatarImage src="/fallback.jpeg" />
+              <AvatarFallback>{post.author?.charAt(0) || "A"}</AvatarFallback>
             </Avatar>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-medium">
-                  {post.title || t("untitled")}
-                </h3>
-                {!post.is_published && (
-                  <Badge
-                    variant="outline"
-                    className="text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800"
-                  >
-                    {t("draft")}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center text-sm text-muted-foreground gap-1">
+              <h3 className="text-base font-semibold text-gray-800 dark:text-gray-100">
+                {post.title || t("untitled")}
+              </h3>
+              <div className="flex items-center text-xs text-muted-foreground gap-1.5">
+                <span>{post.author}</span>
+                <span>•</span>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -328,108 +217,138 @@ export function PostCard({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <span>•</span>
-                <span className="flex items-center">
-                  <Eye size={12} className="mr-1" />
-                  {post.views_count || 0}
-                </span>
               </div>
             </div>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical size={16} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>{t("postOptions")}</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onEdit(post)}>
-                <Edit size={14} className="mr-2" /> {t("editPost")}
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handlePublishToggle}>
-                {post.is_published ? (
-                  <>
-                    <AlertCircle size={14} className="mr-2" /> {t("unpublish")}
-                  </>
-                ) : (
-                  <>
-                    <FileCheck size={14} className="mr-2" /> {t("publish")}
-                  </>
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleShare}>
-                <Copy size={14} className="mr-2" /> {t("copyLink")}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="text-destructive focus:text-destructive"
-                onClick={handleDelete}
-              >
-                <Trash2 size={14} className="mr-2" /> {t("delete")}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {canEdit && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>{t("postOptions")}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => onEdit(post)}>
+                  <Edit size={14} className="mr-2" /> {t("editPost")}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() =>
+                    post.is_published
+                      ? unpublishMutation.mutate(post.id)
+                      : publishMutation.mutate(post.id)
+                  }
+                >
+                  {post.is_published ? (
+                    <>
+                      <AlertCircle size={14} className="mr-2" />{" "}
+                      {t("unpublish")}
+                    </>
+                  ) : (
+                    <>
+                      <FileCheck size={14} className="mr-2" /> {t("publish")}
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleShare}>
+                  <Copy size={14} className="mr-2" /> {t("copyLink")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onSelect={() => deleteMutation.mutate(post.id)}
+                >
+                  <Trash2 size={14} className="mr-2" /> {t("delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
-      <CardContent className="pt-2">
-        <p className="whitespace-pre-line">
+      <CardContent className="pt-2 pb-3">
+        {!post.is_published && (
+          <Badge
+            variant="outline"
+            className="text-amber-600 border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 mb-2"
+          >
+            {t("draft")}
+          </Badge>
+        )}
+        <p className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">
           {truncateContent(post.content || "")}
         </p>
-        {!expanded && post.content && post.content.length > 280 && (
+        {!expanded && post.content && post.content.length > 350 && (
           <Button
             variant="link"
-            className="p-0 h-auto mt-1 font-normal"
+            className="p-0 h-auto mt-1 font-normal text-primary"
             onClick={onExpandToggle}
           >
             {t("readMore")}
           </Button>
         )}
-        {renderMedia()}
+        <MediaGrid media={post.media} title={post.title} />
       </CardContent>
-      <CardFooter className="border-t py-3 flex flex-wrap justify-between">
+      <CardFooter className="border-t bg-gray-50/50 dark:bg-gray-900/20 py-2 px-4 flex items-center justify-between text-muted-foreground">
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLikeToggle}
-            className={cn(
-              "flex items-center gap-2 px-3",
-              liked ? "text-rose-500" : "text-muted-foreground"
-            )}
-          >
-            <Heart size={18} className={cn(liked && "fill-rose-500")} />
-            <span>{likesCount}</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onExpandToggle}
-            className="flex items-center gap-2 text-muted-foreground px-3"
-          >
-            <MessageCircle size={18} />
-            <span>{post.comments?.length || 0}</span>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => canEdit && likeMutation.mutate(post.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-2",
+                    post.user_has_liked && "text-rose-500"
+                  )}
+                  disabled={!canEdit}
+                >
+                  <Heart
+                    size={16}
+                    className={cn(post.user_has_liked && "fill-rose-500")}
+                  />
+                  <span className="text-xs">{post.likes_count}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("likeTooltip")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onExpandToggle}
+                  className="flex items-center gap-1.5 px-2"
+                >
+                  <MessageCircle size={16} />
+                  <span className="text-xs">{post.comments_count}</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{t("commentTooltip")}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => toast.info(t("toast.bookmarkComingSoon"))}
-            className="text-muted-foreground"
-          >
-            <BookmarkPlus size={18} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleShare}
-            className="text-muted-foreground"
-          >
-            <Share size={18} />
-          </Button>
-        </div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1.5 text-xs">
+                <Eye size={16} />
+                <span>{post.views_count}</span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t("viewTooltip")}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </CardFooter>
     </Card>
   );

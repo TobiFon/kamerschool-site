@@ -26,7 +26,7 @@ import { Icons } from "@/components/icons";
 
 const editSchema = z.object({
   position: z.string().min(2, "Position/Full name is required"),
-  permission_level: z.enum(["read", "edit", "admin"]),
+  permission_level: z.enum(["read"]),
 });
 
 type EditFormData = z.infer<typeof editSchema>;
@@ -46,8 +46,6 @@ export function EditStaffForm({ staffMember, onSubmit, isLoading, onCancel }) {
 
   const permissionOptions = [
     { value: "read", label: tInvite("permissionOptions.read") },
-    { value: "edit", label: tInvite("permissionOptions.edit") },
-    { value: "admin", label: tInvite("permissionOptions.admin") },
   ];
 
   // Function to handle form submission and map to UpdateStaffData

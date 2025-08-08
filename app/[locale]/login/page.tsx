@@ -1,3 +1,4 @@
+// app/login/page.tsx
 "use client";
 
 import Link from "next/link";
@@ -16,7 +17,8 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import { isAuthenticated, login } from "@/lib/auth";
+// 🚀 CHANGED: We import `getAuthenticatedUser` now for the initial check.
+import { getAuthenticatedUser, login } from "@/lib/auth";
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
@@ -30,7 +32,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // Create a schema with translated error messages
   const formSchema = useMemo(
     () =>
       z.object({
@@ -52,13 +53,18 @@ export default function LoginPage() {
     },
   });
 
+  // 🚀 CHANGED: The auth check now handles redirection for already logged-in users.
   useEffect(() => {
     const checkAuth = async () => {
       try {
         setIsCheckingAuth(true);
-        const authed = await isAuthenticated();
-        if (authed) {
-          router.replace("/dashboard");
+        const user = await getAuthenticatedUser();
+        if (user) {
+          if (user.is_superuser) {
+            router.replace("/admin/dashboard");
+          } else {
+            router.replace("/dashboard");
+          }
         }
       } catch (error) {
         console.error("Auth check error:", error);
@@ -69,7 +75,6 @@ export default function LoginPage() {
     checkAuth();
   }, [router]);
 
-  // Clear the error when the form values change
   useEffect(() => {
     if (loginError) {
       const subscription = form.watch(() => setLoginError(null));
@@ -77,16 +82,30 @@ export default function LoginPage() {
     }
   }, [form, loginError]);
 
+  // 🚀 CHANGED: The onSubmit function now receives the user object.
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
       setIsLoading(true);
       setLoginError(null);
-      await login(data.username, data.password);
-      router.replace("/dashboard");
+      // `login` now returns the full user object
+      const user = await login(data.username, data.password);
+
+      // Redirect based on user role
+      if (user.is_superuser) {
+        router.replace("/admin/dashboard");
+      } else {
+        router.replace("/dashboard");
+      }
     } catch (error) {
-      // Display error directly in the form
-      if (error instanceof Error && error.message.includes("Invalid")) {
-        setLoginError(t("invalidCredentials"));
+      if (error instanceof Error) {
+        // Handle specific error messages from the backend/auth library
+        if (error.message.includes("Invalid credentials")) {
+          setLoginError(t("invalidCredentials"));
+        } else if (error.message.includes("permission")) {
+          setLoginError(t("noPermission"));
+        } else {
+          setLoginError(t("loginFailed"));
+        }
       } else {
         setLoginError(t("loginFailed"));
       }
@@ -111,7 +130,9 @@ export default function LoginPage() {
       {/* Left Section with Branding */}
       <div className="hidden w-1/2 flex-col items-center justify-center lg:flex space-y-4 relative z-10">
         <Icons.logo />
-        <h1 className="text-4xl font-bold text-white">KAMERSCHOOLS</h1>
+        <h1 className="text-4xl lg:text-6xl font-bold text-white">
+          KamerSchool
+        </h1>
       </div>
 
       {/* Right Section with Form */}

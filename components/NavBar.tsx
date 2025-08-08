@@ -7,8 +7,8 @@ import { usePathname } from "@/i18n/routing";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ArrowRight } from "lucide-react";
-import { Icons } from "./icons";
 import RequestDemoModal from "./RequestDemoModal";
+import { Logo } from "./Logo";
 
 const navLinks = [
   { href: "/", labelKey: "home" },
@@ -139,30 +139,13 @@ export default function Navbar() {
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
-            <Link href="/" legacyBehavior>
-              <a
-                className="flex items-center space-x-2.5 group"
-                onClick={() => {
-                  setIsOpen(false);
-                  // setIsDemoModalOpen(false); // Optionally close demo modal on logo click
-                }}
-              >
-                <motion.div
-                  whileHover={{ rotate: [0, -7, 7, -3, 3, 0], scale: 1.05 }}
-                  transition={{ duration: 0.6, type: "spring", stiffness: 250 }}
-                >
-                  <Icons.coloredLogo className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9 text-primary drop-shadow-sm" />
-                </motion.div>
-                <div className="flex flex-col items-start leading-none">
-                  <span className="text-lg sm:text-xl md:text-2xl font-bold text-slate-800 group-hover:text-primary transition-colors duration-200">
-                    Kamerschools
-                  </span>
-                  <span className="text-xs text-slate-500 hidden sm:block">
-                    Education Reimagined
-                  </span>
-                </div>
-              </a>
-            </Link>
+            <Logo
+              onClick={() => {
+                setIsOpen(false);
+                setIsDemoModalOpen(false);
+              }}
+              link="/"
+            />
 
             <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
               <div className="bg-slate-100/80 rounded-full px-1 py-1 backdrop-blur-sm">

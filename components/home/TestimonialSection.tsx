@@ -23,7 +23,7 @@ const testimonialsData: Testimonial[] = [
   {
     id: "1",
     quote:
-      "Kamerschools has completely revolutionized how we manage student data and communicate with parents. The time saved on administrative tasks is incredible!",
+      "KamerSchool has completely revolutionized how we manage student data and communicate with parents. The time saved on administrative tasks is incredible!",
     highlight: "Revolutionized our school management!",
     name: "Mrs. Amina Diallo",
     role: "Principal, Sunshine Academy",
@@ -57,7 +57,7 @@ const testimonialsData: Testimonial[] = [
   {
     id: "4",
     quote:
-      "Switching to Kamerschools was seamless. The support team was fantastic, and our staff adapted quickly. It's made our daily operations so much smoother.",
+      "Switching to KamerSchool was seamless. The support team was fantastic, and our staff adapted quickly. It's made our daily operations so much smoother.",
     highlight: "Seamless transition, smoother ops.",
     name: "Mr. David K.",
     role: "IT Admin, Future Leaders School",

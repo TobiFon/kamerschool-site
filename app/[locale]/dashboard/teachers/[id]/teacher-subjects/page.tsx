@@ -15,6 +15,7 @@ import ErrorDisplay from "./_components/ErrorDisplay";
 import TeacherSubjectsHeader from "./_components/TeacherSubjectHeader";
 import AvailableClasses from "./_components/AvailableClasses";
 import AssignedSubjects from "./_components/AssignedSubjects";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // TypeScript interfaces
 export interface ClassSubject {
@@ -64,6 +65,7 @@ const TeacherClassSubjectsPage = () => {
     }[]
   >([]);
   const [subjectsToRemove, setSubjectsToRemove] = useState<number[]>([]);
+  const { canEdit } = useCurrentUser();
 
   // Fetch teacher data
   const {
@@ -285,6 +287,7 @@ const TeacherClassSubjectsPage = () => {
         t={t}
         router={router}
         assignedCount={assignedSubjects.length}
+        canEdit={canEdit}
       />
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-6">

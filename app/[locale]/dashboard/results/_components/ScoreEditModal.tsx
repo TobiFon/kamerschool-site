@@ -43,9 +43,16 @@ interface StudentScore {
   error?: string;
 }
 
+interface CacheData {
+  timestamp: number;
+  studentIds: string;
+  scores: StudentScore[];
+}
+
 // Constants for validation
 const MAX_SCORE = 20;
 const MIN_SCORE = 0;
+const CACHE_EXPIRY = 60 * 60 * 1000; // 1 hour in milliseconds
 
 const ScoresEditModal: React.FC<ScoresEditModalProps> = ({
   sequenceId,
@@ -69,7 +76,18 @@ const ScoresEditModal: React.FC<ScoresEditModalProps> = ({
   const [isDataChanged, setIsDataChanged] = useState<boolean>(false);
   const [originalData, setOriginalData] = useState<any>(null);
 
-  const storageKey = `scoresEditModal_${sequenceId}_${classSubjectId}`;
+  // Generate cache key with student IDs hash for better cache invalidation
+  const generateCacheKey = () => {
+    if (!studentResults?.length) return null;
+    const studentIds = studentResults
+      .map((r) => r.student_id)
+      .sort()
+      .join(",");
+    const studentIdsHash = btoa(studentIds).slice(0, 8);
+    return `scoresEditModal_${sequenceId}_${classSubjectId}_${studentIdsHash}`;
+  };
+
+  const storageKey = generateCacheKey();
 
   const {
     data: configData,
@@ -109,7 +127,12 @@ const ScoresEditModal: React.FC<ScoresEditModalProps> = ({
       submitBulkSubjectScores(sequenceId, classId, classSubjectId, scores),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["subjectSequenceScores"] });
-      localStorage.removeItem(storageKey);
+      // Clear cache on successful submission
+      if (storageKey) {
+        localStorage.removeItem(storageKey);
+      }
+      // Also clear any old cache entries for this subject
+      clearOldCacheEntries();
       toast.success(t("scoresSaved"), {
         description: t("scoresSavedDescription"),
       });
@@ -119,29 +142,95 @@ const ScoresEditModal: React.FC<ScoresEditModalProps> = ({
     },
   });
 
-  // Load saved scores from localStorage or initialize
-  useEffect(() => {
-    if (isOpen) {
-      const storedScores = localStorage.getItem(storageKey);
-      if (storedScores) {
-        try {
-          const parsedScores = JSON.parse(storedScores);
-          setStudentScores(parsedScores);
-          validateScores(parsedScores);
-        } catch (error) {
-          console.error("Error parsing stored scores:", error);
-          initializeStudentScores();
-        }
-      } else {
-        initializeStudentScores();
+  // Clear old cache entries for this subject to prevent storage bloat
+  const clearOldCacheEntries = () => {
+    const prefix = `scoresEditModal_${sequenceId}_${classSubjectId}_`;
+    const keysToRemove: string[] = [];
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(prefix) && key !== storageKey) {
+        keysToRemove.push(key);
       }
     }
-  }, [isOpen, studentResults]);
 
-  // Save to localStorage when scores change
+    keysToRemove.forEach((key) => localStorage.removeItem(key));
+  };
+
+  // Check if cached data is valid and not expired
+  const isValidCache = (cacheData: CacheData): boolean => {
+    if (!cacheData || !cacheData.timestamp || !cacheData.scores) {
+      return false;
+    }
+
+    // Check if cache has expired
+    const now = Date.now();
+    if (now - cacheData.timestamp > CACHE_EXPIRY) {
+      return false;
+    }
+
+    // Check if student list matches
+    const currentStudentIds =
+      studentResults
+        ?.map((r) => r.student_id)
+        .sort()
+        .join(",") || "";
+    if (cacheData.studentIds !== currentStudentIds) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // Load and validate cached scores
   useEffect(() => {
-    if (isOpen) {
-      localStorage.setItem(storageKey, JSON.stringify(studentScores));
+    if (isOpen && studentResults?.length && storageKey) {
+      const storedData = localStorage.getItem(storageKey);
+
+      if (storedData) {
+        try {
+          const cacheData: CacheData = JSON.parse(storedData);
+
+          if (isValidCache(cacheData)) {
+            // Use valid cached data
+            setStudentScores(cacheData.scores);
+            setOriginalData(JSON.parse(JSON.stringify(cacheData.scores)));
+            validateScores(cacheData.scores);
+            return;
+          } else {
+            // Remove invalid/expired cache
+            localStorage.removeItem(storageKey);
+          }
+        } catch (error) {
+          console.error("Error parsing stored scores:", error);
+          localStorage.removeItem(storageKey);
+        }
+      }
+
+      // Initialize with fresh data if no valid cache
+      initializeStudentScores();
+
+      // Clear old cache entries when modal opens
+      clearOldCacheEntries();
+    }
+  }, [isOpen, studentResults, storageKey]);
+
+  // Save to localStorage when scores change (with improved caching)
+  useEffect(() => {
+    if (isOpen && studentScores.length > 0 && storageKey) {
+      const currentStudentIds =
+        studentResults
+          ?.map((r) => r.student_id)
+          .sort()
+          .join(",") || "";
+
+      const cacheData: CacheData = {
+        timestamp: Date.now(),
+        studentIds: currentStudentIds,
+        scores: studentScores,
+      };
+
+      localStorage.setItem(storageKey, JSON.stringify(cacheData));
 
       // Don't call validateScores here, which would trigger state updates
       const hasErrors = checkForValidationErrors(studentScores);
@@ -155,9 +244,9 @@ const ScoresEditModal: React.FC<ScoresEditModalProps> = ({
         setIsDataChanged(true);
       }
     }
-  }, [studentScores, isOpen, storageKey, originalData]);
+  }, [studentScores, isOpen, storageKey, originalData, studentResults]);
 
-  const checkForValidationErrors = (scores) => {
+  const checkForValidationErrors = (scores: StudentScore[]): boolean => {
     return scores.some((score) => {
       if (!score.is_absent && score.score !== null) {
         // Check if score is within valid range
@@ -221,7 +310,7 @@ const ScoresEditModal: React.FC<ScoresEditModalProps> = ({
     }
   };
 
-  const validateScores = (scores) => {
+  const validateScores = (scores: StudentScore[]) => {
     let hasErrors = false;
 
     const validatedScores = scores.map((score) => {
@@ -355,7 +444,8 @@ const ScoresEditModal: React.FC<ScoresEditModalProps> = ({
     }
 
     // Final validation before submission
-    if (!validateScores(studentScores)) {
+    const validation = validateScores(studentScores);
+    if (!validation.isValid) {
       toast.error(t("validationErrors"), {
         description: t("pleaseFixErrors"),
       });

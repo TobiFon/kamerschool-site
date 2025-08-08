@@ -50,6 +50,7 @@ import { toast } from "sonner";
 
 import { createCalendarEvent, updateCalendarEvent } from "@/queries/events";
 import { eventFormSchema, EventFormValues } from "@/types/events";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 type EventFormProps = {
   initialData?: Partial<EventFormValues> & { id?: number };
@@ -61,6 +62,7 @@ export default function EventForm({ initialData, onSuccess }: EventFormProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [formProgress, setFormProgress] = useState(0);
+  const { canEdit } = useCurrentUser();
 
   // Setup form with validation
   const form = useForm<EventFormValues>({
@@ -171,10 +173,10 @@ export default function EventForm({ initialData, onSuccess }: EventFormProps) {
               {formProgress < 50
                 ? t("gettingStarted")
                 : formProgress < 80
-                ? t("almostThere")
-                : formProgress === 100
-                ? t("readyToSubmit")
-                : t("inProgress")}
+                  ? t("almostThere")
+                  : formProgress === 100
+                    ? t("readyToSubmit")
+                    : t("inProgress")}
             </Badge>
           </div>
 
@@ -366,7 +368,7 @@ export default function EventForm({ initialData, onSuccess }: EventFormProps) {
               </Button>
               <Button
                 type="submit"
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || !canEdit}
                 className="bg-gradient-to-r from-primary/80 to-primary hover:from-primary hover:to-primary/80 text-white px-8 transition-all"
               >
                 {mutation.isPending ? (

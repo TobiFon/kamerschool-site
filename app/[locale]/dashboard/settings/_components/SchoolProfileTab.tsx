@@ -35,6 +35,7 @@ import fallbackImage from "@/public/fallback.jpeg";
 import { updateSchoolDetails } from "@/queries/schools";
 import { toast } from "sonner";
 import { Edit } from "lucide-react";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const profileSchema = z.object({
   name: z.string().min(3, "School name is required"),
@@ -54,6 +55,7 @@ export function SchoolProfileTab() {
   const [isEditing, setIsEditing] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
+  const { canEdit } = useCurrentUser(); // Assuming this hook provides the user's permissions
 
   const {
     data: school,
@@ -333,7 +335,11 @@ export function SchoolProfileTab() {
           </CardContent>
           <CardFooter className="flex justify-end gap-2">
             {!isEditing ? (
-              <Button type="button" onClick={() => setIsEditing(true)}>
+              <Button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                disabled={!canEdit}
+              >
                 <Edit className="mr-2 h-4 w-4" />
                 {t("editButton")}
               </Button>

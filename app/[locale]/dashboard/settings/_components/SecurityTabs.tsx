@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { authFetch, fetchSchool } from "@/lib/auth";
+import { authFetch, fetchSchool } from "@/lib/auth"; // Assuming authFetch handles headers
 import {
   Card,
   CardContent,
@@ -30,30 +30,45 @@ import { toast } from "sonner";
 // API function to change password
 async function changeSchoolPassword(
   schoolId: number | string,
-  newPassword: string
+  currentPasswordVal: string, // Renamed for clarity
+  newPasswordVal: string // Renamed for clarity
 ): Promise<void> {
   const res = await authFetch(
+    // authFetch should add Content-Type: application/json
     `${process.env.NEXT_PUBLIC_API_URL}/schools/${schoolId}/`,
     {
       method: "PATCH",
-      body: JSON.stringify({ password: newPassword }),
+      body: JSON.stringify({
+        current_password: currentPasswordVal, // Match backend expected field name
+        password: newPasswordVal, // This is for the new password
+      }),
     }
   );
 
   if (!res.ok) {
-    // Try to get more specific error from backend if possible
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(
-      errorData.detail || errorData.password || "Failed to update password"
-    );
+    // Prioritize specific field errors from backend if available
+    let errorMessage = "Failed to update password";
+    if (
+      errorData.current_password &&
+      Array.isArray(errorData.current_password)
+    ) {
+      errorMessage = errorData.current_password.join(" ");
+    } else if (errorData.password && Array.isArray(errorData.password)) {
+      errorMessage = errorData.password.join(" ");
+    } else if (errorData.detail) {
+      errorMessage = errorData.detail;
+    }
+    throw new Error(errorMessage);
   }
+  // Optional: Send a "password changed" notification email here,
+  // or trigger it from the backend upon successful password change.
 }
 
 export function SecurityTab() {
   const t = useTranslations("settingsPage.security");
   const tCommon = useTranslations("Common");
-
-  // Fetch school data to get the ID
+  const tZod = useTranslations("zodValidation");
   const {
     data: school,
     isLoading: isLoadingSchool,
@@ -65,43 +80,59 @@ export function SecurityTab() {
 
   const passwordSchema = z
     .object({
-      // currentPassword: z.string().min(1, { message: t("currentPasswordRequired") }), // Backend doesn't use current password for this endpoint yet
-      newPassword: z.string().min(8, { message: t("passwordMinLength") }),
-      confirmPassword: z.string(),
+      currentPassword: z
+        .string()
+        .min(1, { message: tZod("currentPasswordRequired") }),
+      newPassword: z
+        .string()
+        .min(8, { message: tZod("passwordMinLength", { min: 8 }) })
+        .regex(/[a-z]/, { message: tZod("passwordLowercase") })
+        .regex(/[A-Z]/, { message: tZod("passwordUppercase") })
+        .regex(/[0-9]/, { message: tZod("passwordNumber") })
+        // Optional: Add special character requirement
+        .regex(/[^a-zA-Z0-9]/, { message: tZod("passwordSpecialChar") }),
+      confirmPassword: z
+        .string()
+        .min(1, { message: tZod("confirmPasswordRequired") }),
     })
     .refine((data) => data.newPassword === data.confirmPassword, {
-      message: t("passwordMismatch"),
+      message: tZod("passwordMismatch"),
       path: ["confirmPassword"], // Attach error to the confirmation field
     });
 
-  const form = useForm<z.infer<typeof passwordSchema>>({
+  type PasswordFormData = z.infer<typeof passwordSchema>;
+
+  const form = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
-      //   currentPassword: "",
+      currentPassword: "",
       newPassword: "",
       confirmPassword: "",
     },
   });
 
   const mutation = useMutation({
-    mutationFn: (data: z.infer<typeof passwordSchema>) => {
-      if (!school?.id) throw new Error("School ID not found");
-      return changeSchoolPassword(school.id, data.newPassword);
+    mutationFn: (data: PasswordFormData) => {
+      if (!school?.id)
+        throw new Error("School ID not found for password change.");
+      return changeSchoolPassword(
+        school.id,
+        data.currentPassword,
+        data.newPassword
+      );
     },
     onSuccess: () => {
       toast.success(tCommon("success"), {
         description: t("changeSuccess"),
       });
       form.reset();
-      // Optional: refetch user/auth status if needed
+      // Consider sending a notification email that password was changed
+      // This could be a separate API call or handled by the backend automatically
     },
     onError: (error) => {
-      let description = t("changeError");
+      let description = t("changeErrorDefault"); // More specific default
       if (error instanceof Error && error.message) {
-        // Basic check if backend provided a detail message
-        if (!error.message.includes("Failed")) {
-          description = error.message;
-        }
+        description = error.message; // Use the error message from changeSchoolPassword
       }
       toast.error(tCommon("error"), {
         description: description,
@@ -109,19 +140,21 @@ export function SecurityTab() {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof passwordSchema>) => {
+  const onSubmit = (data: PasswordFormData) => {
     mutation.mutate(data);
   };
 
   if (isLoadingSchool) return <div>{tCommon("loading")}...</div>;
   if (isErrorSchool || !school)
-    return <div className="text-destructive">{tCommon("error")}</div>;
+    return <div className="text-destructive">{tCommon("errorGeneral")}</div>; // More specific
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("changePassword")}</CardTitle>
-        <CardDescription>{t("title")}</CardDescription>
+        <CardTitle>{t("changePasswordTitle")}</CardTitle>{" "}
+        {/* More specific key */}
+        <CardDescription>{t("changePasswordDescription")}</CardDescription>{" "}
+        {/* More specific key */}
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -129,20 +162,23 @@ export function SecurityTab() {
             onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-6 max-w-md"
           >
-            {/* Current password field (if needed by backend) */}
-            {/* <FormField
+            <FormField
               control={form.control}
               name="currentPassword"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("currentPassword")}</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      {...field}
+                      disabled={mutation.isPending}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
-            /> */}
+            />
 
             <FormField
               control={form.control}
@@ -151,7 +187,11 @@ export function SecurityTab() {
                 <FormItem>
                   <FormLabel>{t("newPassword")}</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      {...field}
+                      disabled={mutation.isPending}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -165,14 +205,25 @@ export function SecurityTab() {
                 <FormItem>
                   <FormLabel>{t("confirmPassword")}</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input
+                      type="password"
+                      {...field}
+                      disabled={mutation.isPending}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button type="submit" disabled={mutation.isPending}>
+            <Button
+              type="submit"
+              disabled={
+                mutation.isPending ||
+                !form.formState.isDirty ||
+                !form.formState.isValid
+              }
+            >
               {mutation.isPending && (
                 <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
               )}
@@ -180,12 +231,6 @@ export function SecurityTab() {
             </Button>
           </form>
         </Form>
-        {/* Optional: Link to forgot password */}
-        {/* <div className="mt-4 text-sm">
-          <Link href="/forgot-password" className="text-primary hover:underline">
-            {t("forgotPasswordLink")}
-          </Link>
-        </div> */}
       </CardContent>
     </Card>
   );

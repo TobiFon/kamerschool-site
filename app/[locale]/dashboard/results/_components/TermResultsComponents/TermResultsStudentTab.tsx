@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const TermResultsStudentsTab = ({
   filteredResults,
@@ -62,6 +63,7 @@ const TermResultsStudentsTab = ({
   schoolData,
 }) => {
   const t = useTranslations("Results");
+  const { canEdit } = useCurrentUser();
 
   const getPerformanceText = (average) => {
     if (average >= 16) return t("excellent");
@@ -105,7 +107,11 @@ const TermResultsStudentsTab = ({
             {/* Publish Actions */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="flex items-center">
+                <Button
+                  variant="outline"
+                  className="flex items-center"
+                  disabled={!canEdit}
+                >
                   <Eye className="mr-2 h-4 w-4 text-green-500" />
                   {t("publishActions")}
                   <ChevronDown className="ml-2 h-4 w-4" />
@@ -375,6 +381,7 @@ const TermResultsStudentsTab = ({
                               <Button
                                 variant="outline"
                                 size="sm"
+                                disabled={!canEdit}
                                 onClick={() =>
                                   handlePublishSelected(!result.is_published, [
                                     result.student_id,

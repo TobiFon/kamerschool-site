@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { deleteClass } from "@/queries/class";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const formatLevel = (level: string): string => {
   return level.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
@@ -33,6 +34,7 @@ const Header: React.FC<HeaderProps> = ({ classData, onGoBack, schoolData }) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const { canEdit } = useCurrentUser();
 
   const handleEditClass = () =>
     router.push(`/dashboard/classes/${classData.id}/edit`);
@@ -89,6 +91,7 @@ const Header: React.FC<HeaderProps> = ({ classData, onGoBack, schoolData }) => {
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
+                    disabled={!canEdit}
                     variant="outline"
                     className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
                   >
@@ -117,7 +120,11 @@ const Header: React.FC<HeaderProps> = ({ classData, onGoBack, schoolData }) => {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
-              <Button onClick={handleEditClass} className="gap-2">
+              <Button
+                onClick={handleEditClass}
+                className="gap-2"
+                disabled={!canEdit}
+              >
                 <Edit className="h-4 w-4" />
                 {t("editClass")}
               </Button>

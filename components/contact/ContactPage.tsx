@@ -23,9 +23,9 @@ import {
 import Link from "next/link";
 import RequestDemoModal from "@/components/RequestDemoModal";
 import React from "react";
-const BOGUS_EMAIL = "info@kamerschools.example.cm";
-const BOGUS_PHONE = "+237 600 000 000";
-const BOGUS_ADDRESS = "123 Innovation Drive, Douala, Cameroon";
+const BOGUS_EMAIL = "kamerschoolapp@gmail.com";
+const BOGUS_PHONE = "+237696602209";
+const BOGUS_ADDRESS = "Yaounde, Cameroon";
 
 type FormState = "idle" | "submitting" | "success" | "error";
 interface FormData {

@@ -25,7 +25,7 @@ import {
 
 // Base asset paths (will be localized by the hook)
 // These paths should NOT have leading slashes and NO file extensions
-// They represent the path *after* `kamerschools/{locale}/`
+// They represent the path *after* `KamerSchool/{locale}/`
 const baseAdminDashboardImagePath = "tablet-phone/tablet-1";
 const baseParentAppOverviewImagePath = "tablet-phone/phone-2";
 const baseParentAppResultsImagePath = "tablet-phone/phone-1";

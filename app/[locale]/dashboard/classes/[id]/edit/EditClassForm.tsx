@@ -94,7 +94,6 @@ const classFormSchema = z.object({
   level: z.string().min(1, { message: "level is required" }),
   stream: z.string().nullable().optional(),
   section: z.string().nullable().optional(),
-  sub_stream: z.string().nullable().optional(),
   description: z.string().nullable().optional(),
 });
 
@@ -133,7 +132,6 @@ export default function EditClassForm({ classId }: EditClassFormProps) {
         level: classData.level || "",
         stream: classData.stream || null,
         section: classData.section || null,
-        sub_stream: classData.sub_stream || null,
         description: classData.description || "",
       });
       setTimeout(() => {
@@ -146,7 +144,6 @@ export default function EditClassForm({ classId }: EditClassFormProps) {
   const watchLevel = form.watch("level");
   const watchStream = form.watch("stream");
   const watchSection = form.watch("section");
-  const watchSubStream = form.watch("sub_stream");
   const watchDescription = form.watch("description");
 
   // Update form progress
@@ -159,7 +156,6 @@ export default function EditClassForm({ classId }: EditClassFormProps) {
       if (watchLevel) completedFields++;
       if (watchStream) completedFields++;
       if (watchSection) completedFields++;
-      if (watchSubStream) completedFields++;
       if (watchDescription) completedFields += 0.5; // Half weight for description
 
       setFormProgress(Math.min((completedFields / totalFields) * 100, 100));
@@ -170,7 +166,6 @@ export default function EditClassForm({ classId }: EditClassFormProps) {
     watchLevel,
     watchStream,
     watchSection,
-    watchSubStream,
     watchDescription,
   ]);
 
@@ -287,10 +282,10 @@ export default function EditClassForm({ classId }: EditClassFormProps) {
               {formProgress < 50
                 ? t("gettingStarted")
                 : formProgress < 80
-                ? t("almostThere")
-                : formProgress === 100
-                ? t("readyToSubmit")
-                : t("inProgress")}
+                  ? t("almostThere")
+                  : formProgress === 100
+                    ? t("readyToSubmit")
+                    : t("inProgress")}
             </Badge>
           </div>
 
@@ -463,35 +458,6 @@ export default function EditClassForm({ classId }: EditClassFormProps) {
                   )}
                 />
               </div>
-
-              <div className="grid gap-6 md:grid-cols-2">
-                {/* Sub Stream */}
-                <FormField
-                  control={form.control}
-                  name="sub_stream"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="font-medium">
-                        {t("subStream")}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value || ""}
-                          onChange={(e) =>
-                            field.onChange(e.target.value || null)
-                          }
-                          placeholder={t("enterSubStream")}
-                          disabled={mutation.isPending}
-                          className="bg-white border border-gray-300 hover:border-primary/80 transition-colors"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
               {/* Description */}
               <FormField
                 control={form.control}

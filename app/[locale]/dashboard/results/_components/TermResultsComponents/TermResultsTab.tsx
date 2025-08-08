@@ -34,6 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const TermResultsTab = ({ termId, classId, termName }) => {
   const t = useTranslations("Results");
@@ -46,6 +47,7 @@ const TermResultsTab = ({ termId, classId, termName }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("overview");
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+  const { canEdit } = useCurrentUser(); // Assuming this is a custom hook to check user permissions
 
   // Calculation state
   const [isCalculating, setIsCalculating] = useState(false);
@@ -586,7 +588,7 @@ const TermResultsTab = ({ termId, classId, termName }) => {
         <div className="mt-4 md:mt-0 flex items-center space-x-2">
           <Button
             onClick={handleCalculateResults}
-            disabled={isCalculating}
+            disabled={isCalculating || !canEdit}
             className="flex items-center"
             variant="default" // Or "primary"
           >
@@ -597,7 +599,7 @@ const TermResultsTab = ({ termId, classId, termName }) => {
             )}
             {isCalculating
               ? t("calculating") || "Calculating..."
-              : t("calculateResults") || "Calculate Results"}
+              : t("calculateTermResults") || "Calculate Results"}
           </Button>
         </div>
       </div>

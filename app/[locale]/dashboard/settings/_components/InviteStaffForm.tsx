@@ -26,7 +26,7 @@ import { Icons } from "@/components/icons";
 const inviteSchema = z.object({
   email: z.string().email("Invalid email address"),
   full_name: z.string().min(2, "Full name is required"),
-  permission_level: z.enum(["read", "edit", "admin"]),
+  permission_level: z.enum(["read"]),
 });
 
 type InviteFormData = z.infer<typeof inviteSchema>;
@@ -46,8 +46,6 @@ export function InviteStaffForm({ onSubmit, isLoading, onCancel }) {
 
   const permissionOptions = [
     { value: "read", label: t("permissionOptions.read") },
-    { value: "edit", label: t("permissionOptions.edit") },
-    { value: "admin", label: t("permissionOptions.admin") },
   ];
 
   return (

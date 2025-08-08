@@ -1,69 +1,314 @@
 {
+  "adminSidebar": {
+    "dashboard": "Tableau de Bord",
+    "schools": "Écoles",
+    "subjects": "Matières",
+    "academicYears": "Années Académiques",
+    "adminPanel": "Panneau Admin",
+    "logout": "Déconnexion",
+    "confirmLogoutTitle": "Êtes-vous sûr de vouloir vous déconnecter ?",
+    "confirmLogoutDescription": "Vous serez redirigé vers la page de connexion.",
+    "cancel": "Annuler"
+  },
+  "adminTopbar": {
+    "error": "Erreur de chargement",
+    "profileAlt": "Profil administrateur"
+  },
+  "AdminDashboard": {
+    "title": "Aperçu de la Plateforme",
+    "totalSchools": "Total des Écoles",
+    "totalSchoolsDesc": "Nombre d'écoles inscrites sur la plateforme.",
+    "totalStudents": "Total des Élèves",
+    "totalStudentsDesc": "Nombre total d'élèves dans toutes les écoles.",
+    "totalTeachers": "Total des Enseignants",
+    "totalTeachersDesc": "Nombre total d'enseignants dans toutes les écoles.",
+    "activeSubscriptions": "Abonnements Actifs",
+    "activeSubscriptionsDesc": "Écoles avec un plan d'abonnement actif.",
+    "recentActivity": "Activité Récente de la Plateforme",
+    "activityPlaceholder": "Les journaux d'activité récents seront affichés ici.",
+    "manageSchools": "Gérer les Écoles",
+    "recentlyAddedSchools": "Écoles Récemment Ajoutées"
+  },
+  "AdminSchoolManagement": {
+    "pageTitle": "Gestion des Établissements",
+    "pageDescription": "Créez, consultez et gérez tous les établissements sur la plateforme.",
+    "searchPlaceholder": "Rechercher par nom, ID, ou ville...",
+    "createSchool": "Ajouter un Établissement",
+    "tableHeaderName": "Nom de l'Établissement",
+    "tableHeaderId": "ID de l'Établissement",
+    "tableHeaderCity": "Ville",
+    "tableHeaderEmail": "Email de Contact",
+    "tableHeaderDate": "Date d'Ajout",
+    "tableHeaderActions": "Actions",
+    "actions": "Actions",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "errorLoading": "Erreur de Chargement des Établissements",
+    "retry": "Réessayer",
+    "noSchoolsFound": "Aucun Établissement Trouvé",
+    "noSchoolsCreated": "Aucun établissement n'a encore été créé",
+    "tryChangingFilters": "Essayez d'ajuster votre recherche ou vos filtres.",
+    "createFirstSchool": "Commencez par créer le premier établissement.",
+    "deleteConfirmTitle": "Êtes-vous sûr de vouloir supprimer cet établissement ?",
+    "deleteConfirmDescription": "Cette action est irréversible. Elle supprimera définitivement l'établissement et toutes ses données associées, y compris les élèves, les classes et les résultats.",
+    "confirmDelete": "Oui, Supprimer",
+
+    "toast": {
+      "operationError": "L'opération a échoué",
+      "createSuccess": "Établissement créé avec succès !",
+      "updateSuccess": "Établissement mis à jour avec succès !",
+      "deleteSuccess": "Établissement supprimé avec succès.",
+      "deleteError": "La suppression de l'établissement a échoué."
+    },
+    "form": {
+      "logoLabel": "Logo de l'Établissement",
+      "nameLabel": "Nom Officiel de l'Établissement",
+      "namePlaceholder": "ex: Lycée Bilingue de...",
+      "abbreviationLabel": "Abréviation",
+      "abbreviationPlaceholder": "ex: LBG",
+      "emailLabel": "Adresse Email",
+      "emailPlaceholder": "ex: contact@ecole.com",
+      "phoneLabel": "Numéro de Téléphone",
+      "phonePlaceholder": "+237...",
+      "cityLabel": "Ville",
+      "cityPlaceholder": "ex: Douala",
+      "provinceLabel": "Province",
+      "provincePlaceholder": "ex: Littoral",
+      "saveChanges": "Enregistrer les Modifications",
+      "createSchool": "Créer l'Établissement"
+    },
+    "modal": {
+      "editTitle": "Modifier les Informations de l'Établissement",
+      "createTitle": "Créer un Nouvel Établissement",
+      "editDescription": "Apportez des modifications au profil de l'établissement. Cliquez sur enregistrer lorsque vous avez terminé.",
+      "createDescription": "Remplissez les détails ci-dessous pour enregistrer un nouvel établissement sur la plateforme."
+    }
+  },
+  "AdminSubjectManagement": {
+    "pageTitle": "Gestion des Matières",
+    "pageDescription": "Gérez toutes les matières disponibles dans les différents systèmes éducatifs.",
+    "searchPlaceholder": "Rechercher par nom ou code...",
+    "filterBySystem": "Filtrer par système",
+    "allSystems": "Tous les Systèmes",
+    "filterByLevel": "Filtrer par niveau",
+    "allLevels": "Tous les Niveaux",
+    "createSubject": "Ajouter une Matière",
+    "tableHeaderName": "Nom de la Matière",
+    "tableHeaderCode": "Code",
+    "tableHeaderSystem": "Système Éducatif",
+    "tableHeaderLevel": "Niveau",
+    "tableHeaderActions": "Actions",
+    "actions": "Actions",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "errorLoading": "Erreur de Chargement des Matières",
+    "retry": "Réessayer",
+    "noSubjectsFound": "Aucune Matière Trouvée",
+    "noSubjectsCreated": "Aucune matière n'a encore été ajoutée",
+    "tryChangingFilters": "Essayez d'ajuster votre recherche ou vos filtres.",
+    "createFirstSubject": "Commencez par ajouter la première matière.",
+    "deleteConfirmTitle": "Êtes-vous sûr de vouloir supprimer cette matière ?",
+    "deleteConfirmDescription": "Cette action est irréversible. Elle supprimera définitivement la matière '{subjectName}'. Cela pourrait affecter les configurations de classe existantes.",
+    "confirmDelete": "Oui, Supprimer",
+    "subjectsList": "Liste des Matières",
+    "tableHeaderUsage": "Utilisation",
+    "deleteConfirmInUseDescription": "Cette matière, '{subjectName}', est actuellement assignée à {count, plural, =1 {# classe} other {# classes}}. La supprimer la retirera de toutes. Cette action est irréversible et peut causer des problèmes.",
+    "paginationStatus": "Page {currentPage} sur {totalPages} ({totalCount} matières)",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "createFirstSubjectAfterPopulate": "Si vous venez d'exécuter le générateur de matières, veuillez cliquer sur le bouton d'actualisation pour voir la liste.",
+    "toast": {
+      "operationError": "L'opération a échoué",
+      "createSuccess": "Matière créée avec succès !",
+      "updateSuccess": "Matière mise à jour avec succès !",
+      "deleteSuccess": "Matière supprimée avec succès.",
+      "deleteError": "La suppression de la matière a échoué."
+    },
+    "modal": {
+      "editTitle": "Modifier la Matière",
+      "createTitle": "Créer une Nouvelle Matière",
+      "description": "Fournissez les détails pour la matière ci-dessous.",
+      "systemLabel": "Système Éducatif",
+      "systemPlaceholder": "Sélectionnez un système",
+      "levelLabel": "Niveau Scolaire",
+      "levelPlaceholder": "Sélectionnez un niveau",
+      "nameLabel": "Nom de la Matière",
+      "codeLabel": "Code de la Matière",
+      "abbreviationLabel": "Abréviation (Optionnel)",
+      "descriptionLabel": "Description (Optionnel)",
+      "saveChanges": "Enregistrer les Modifications",
+      "createSubject": "Créer la Matière",
+      "codeDescription": "Le préfixe est généré automatiquement. Veuillez ajouter un identifiant numérique unique (ex: 9001)."
+    }
+  },
+  "AdminInvoicing": {
+    "title": "Factures",
+    "description": "Gérez les factures financières de cet établissement.",
+    "createInvoice": "Créer une Facture",
+    "error": {
+      "title": "Erreur de Chargement des Factures",
+      "unknown": "Une erreur inconnue est survenue."
+    },
+    "empty": {
+      "title": "Aucune Facture Trouvée",
+      "description": "Commencez par créer la première facture pour cet établissement."
+    },
+    "toast": {
+      "createSuccess": "Facture créée avec succès !",
+      "createError": "Échec de la création de la facture.",
+      "updateSuccess": "Facture mise à jour avec succès !",
+      "updateError": "Échec de la mise à jour de la facture.",
+      "deleteSuccess": "Facture supprimée avec succès !",
+      "deleteError": "Échec de la suppression de la facture.",
+      "paymentSuccess": "Paiement enregistré avec succès !",
+      "paymentError": "Échec de l'enregistrement du paiement."
+    },
+    "modal": {
+      "editTitle": "Modifier la Facture",
+      "createTitle": "Créer une Nouvelle Facture",
+      "description": "Remplissez les détails ci-dessous. Tous les articles et totaux seront calculés automatiquement.",
+      "issueDate": "Date d'Émission",
+      "dueDate": "Date d'Échéance",
+      "status": "Statut",
+      "items": "Articles de la Facture",
+      "itemDescription": "Description du service ou produit",
+      "itemQuantity": "Qté",
+      "itemPrice": "Prix Unitaire",
+      "addItem": "Ajouter un Article",
+      "notes": "Notes / Conditions",
+      "notesPlaceholder": "ex: Paiement dû sous 30 jours.",
+      "cancel": "Annuler",
+      "saveChanges": "Enregistrer",
+      "createInvoice": "Créer la Facture"
+    },
+    "paymentModal": {
+      "title": "Enregistrer un Nouveau Paiement",
+      "description": "Saisissez les détails du paiement reçu pour cette facture.",
+      "amount": "Montant du Paiement",
+      "paymentDate": "Date du Paiement",
+      "paymentMethod": "Moyen de Paiement",
+      "transactionId": "ID de Transaction (Optionnel)",
+      "submit": "Enregistrer le Paiement",
+      "cancel": "Annuler"
+    },
+    "detailModal": {
+      "title": "Détails de la Facture",
+      "summary": "Résumé",
+      "status": "Statut",
+      "issueDate": "Date d'Émission",
+      "dueDate": "Date d'Échéance",
+      "totalAmount": "Montant Total",
+      "amountPaid": "Montant Payé",
+      "balanceDue": "Solde Dû",
+      "recordPayment": "Enregistrer un Paiement",
+      "downloadReceipt": "Télécharger le Reçu",
+      "itemsTitle": "Articles de la Facture",
+      "itemsDescriptionHeader": "Description",
+      "itemsTotalHeader": "Total",
+      "paymentsTitle": "Historique des Paiements",
+      "paymentsDateHeader": "Date",
+      "paymentsMethodHeader": "Méthode",
+      "paymentsAmountHeader": "Montant",
+      "noPayments": "Aucun paiement enregistré"
+    },
+    "deleteDialog": {
+      "title": "Êtes-vous sûr de vouloir supprimer cette facture ?",
+      "description": "Ceci supprimera définitivement la facture {invoiceNumber}. Cette action est irréversible.",
+      "confirm": "Supprimer"
+    }
+  },
+  "AdminAcademicYearManagement": {
+    "pageTitle": "Périodes Académiques",
+    "pageDescription": "Gérez toutes les années académiques et leurs trimestres correspondants.",
+    "createYear": "Nouvelle Année Académique",
+    "modal": {
+      "editTitle": "Modifier {type, select, year {l'Année Académique} other {le Trimestre}}",
+      "createTitle": "Créer {type, select, year {une Nouvelle Année Académique} other {un Nouveau Trimestre}}",
+      "description": "Fournissez les détails pour la période ci-dessous.",
+      "yearNameLabel": "Nom de l'Année Académique (ex: 2024/2025)",
+      "termNameLabel": "Nom du Trimestre (ex: premier, deuxième, troisième)",
+      "startDateLabel": "Date de Début",
+      "endDateLabel": "Date de Fin",
+      "activeLabel": "Est-ce la période active ?",
+      "activeDescription": "Activez cette {type, select, year {année} other {trimestre}} pour l'utiliser sur toute la plateforme.",
+      "saveChanges": "Enregistrer",
+      "createButton": "Créer"
+    },
+    "deleteYearConfirmTitle": "Supprimer l'Année Académique ?",
+    "deleteYearConfirmDescription": "Ceci supprimera définitivement l'année et tous ses trimestres associés. Cette action est irréversible.",
+    "deleteTermConfirmTitle": "Supprimer le Trimestre ?",
+    "deleteTermConfirmDescription": "Ceci supprimera définitivement le trimestre. Cette action est irréversible.",
+    "deleting": "Suppression en cours..."
+  },
   "Metadata": {
+    "AdminDashboard": {
+      "title": "Panneau d'Administration | KamerSchools",
+      "description": "Gérez les écoles, les matières et les paramètres globaux de la plateforme KamerSchools."
+    },
     "FeaturesParentsPage": {
-      "title": "Fonctionnalités Parents & Élèves | Kamerschools",
-      "description": "Découvrez comment l'application mobile Kamerschools connecte les parents et informe les élèves avec un accès en temps réel aux résultats, actualités et dossiers scolaires.",
-      "ogTitle": "Responsabiliser les Parents avec l'App Kamerschools",
-      "ogDescription": "Voyez comment Kamerschools aide les parents au Cameroun à s'impliquer dans l'éducation de leur enfant avec des informations en temps réel et une communication facile.",
-      "ogImageAlt": "Présentation de l'interface de l'application mobile parent Kamerschools.",
+      "title": "Fonctionnalités Parents & Élèves | KamerSchool",
+      "description": "Découvrez comment l'application mobile KamerSchool connecte les parents et informe les élèves avec un accès en temps réel aux résultats, actualités et dossiers scolaires.",
+      "ogTitle": "Responsabiliser les Parents avec l'App KamerSchool",
+      "ogDescription": "Voyez comment KamerSchool aide les parents au Cameroun à s'impliquer dans l'éducation de leur enfant avec des informations en temps réel et une communication facile.",
+      "ogImageAlt": "Présentation de l'interface de l'application mobile parent KamerSchool.",
       "keywords": "portail parents Cameroun, suivi progrès élève, application communication scolaire, actualités école parents, résultats scolaires application"
     },
     "FeaturesAdminPage": {
-      "title": "Fonctionnalités Admin | Kamerschools",
-      "description": "Découvrez les puissants outils d'administration de Kamerschools : gérez les classes, élèves, résultats, finances, emplois du temps et la communication scolaire sans effort.",
-      "ogTitle": "Kamerschools : Fonctionnalités Admin pour une Gestion Scolaire Totale",
-      "ogDescription": "Optimisez les opérations, obtenez des informations clés et renforcez votre personnel avec le tableau de bord admin intuitif de Kamerschools. Parfait pour les écoles au Cameroun.",
-      "ogImageAlt": "Aperçu de l'interface du tableau de bord d'administration de Kamerschools.",
+      "title": "Fonctionnalités Admin | KamerSchool",
+      "description": "Découvrez les puissants outils d'administration de KamerSchool : gérez les classes, élèves, résultats, finances, emplois du temps et la communication scolaire sans effort.",
+      "ogTitle": "KamerSchool : Fonctionnalités Admin pour une Gestion Scolaire Totale",
+      "ogDescription": "Optimisez les opérations, obtenez des informations clés et renforcez votre personnel avec le tableau de bord admin intuitif de KamerSchool. Parfait pour les écoles au Cameroun.",
+      "ogImageAlt": "Aperçu de l'interface du tableau de bord d'administration de KamerSchool.",
       "keywords": "logiciel gestion scolaire Cameroun, tableau de bord admin, gestion élèves, dossiers académiques, finances scolaires, logiciel emploi du temps, application communication parents"
     },
     "Root": {
-      "title": "Kamerschools",
-      "titleTemplateSuffix": "Kamerschools",
+      "title": "KamerSchool",
+      "titleTemplateSuffix": "KamerSchool",
       "description": "La Solution Complète de Gestion Scolaire pour les Lycées et Collèges au Cameroun. Optimisez les aspects académiques, financiers, la communication, et plus encore.",
       "keywords": "logiciel gestion scolaire, éducation Cameroun, ERP écoles, application parents, dossiers élèves, administration scolaire, système Anglophone, système Francophone",
-      "author": "L'équipe Kamerschools",
-      "ogTitle": "Kamerschools : Gestion Scolaire Moderne pour le Cameroun",
-      "ogDescription": "Découvrez Kamerschools, la plateforme tout-en-un pour gérer efficacement votre lycée ou collège au Cameroun et améliorer l'engagement des parents.",
-      "ogUrl": "https://www.kamerschools.com/fr",
-      "ogSiteName": "Kamerschools",
-      "ogImageAlt": "Aperçu de l'interface de la plateforme Kamerschools.",
-      "twitterTitle": "Kamerschools : Élevez le Niveau de Votre École Camerounaise",
-      "twitterDescription": "Simplifiez les opérations et dynamisez la communication avec les parents grâce à Kamerschools, conçu pour les lycées et collèges au Cameroun.",
+      "author": "L'équipe KamerSchool",
+      "ogTitle": "KamerSchool : Gestion Scolaire Moderne pour le Cameroun",
+      "ogDescription": "Découvrez KamerSchool, la plateforme tout-en-un pour gérer efficacement votre lycée ou collège au Cameroun et améliorer l'engagement des parents.",
+      "ogUrl": "https://www.KamerSchool.com/fr",
+      "ogSiteName": "KamerSchool",
+      "ogImageAlt": "Aperçu de l'interface de la plateforme KamerSchool.",
+      "twitterTitle": "KamerSchool : Élevez le Niveau de Votre École Camerounaise",
+      "twitterDescription": "Simplifiez les opérations et dynamisez la communication avec les parents grâce à KamerSchool, conçu pour les lycées et collèges au Cameroun.",
       "openGraph": {
         "type": "website",
-        "siteName": "Kamerschools",
+        "siteName": "KamerSchool",
         "locale": "fr_FR"
       }
     },
     "Dashboard": {
-      "title": "Tableau de Bord - Kamerschools",
-      "description": "Accédez et gérez toutes les opérations de votre école via le tableau de bord administratif Kamerschools."
+      "title": "Tableau de Bord - KamerSchool",
+      "description": "Accédez et gérez toutes les opérations de votre école via le tableau de bord administratif KamerSchool."
     },
     "HomePage": {
-      "title": "Kamerschools | Gestion Scolaire Intelligente pour le Cameroun",
-      "description": "Transformez votre lycée ou collège camerounais avec Kamerschools – le logiciel tout-en-un pour une administration facile, un engagement parental accru et la réussite scolaire.",
-      "ogTitle": "Kamerschools : Gestion Scolaire Tout-en-Un pour le Cameroun",
-      "ogDescription": "Simplifiez les opérations scolaires, connectez-vous avec les parents et visez l'excellence académique. Découvrez Kamerschools dès aujourd'hui !"
+      "title": "KamerSchool | Gestion Scolaire Intelligente pour le Cameroun",
+      "description": "Transformez votre lycée ou collège camerounais avec KamerSchool – le logiciel tout-en-un pour une administration facile, un engagement parental accru et la réussite scolaire.",
+      "ogTitle": "KamerSchool : Gestion Scolaire Tout-en-Un pour le Cameroun",
+      "ogDescription": "Simplifiez les opérations scolaires, connectez-vous avec les parents et visez l'excellence académique. Découvrez KamerSchool dès aujourd'hui !"
     },
     "AdminFeaturesPage": {
-      "title": "Fonctionnalités Admin | Kamerschools",
-      "description": "Découvrez les puissants outils d'administration de Kamerschools : gérez les classes, élèves, résultats, finances, emplois du temps et la communication scolaire sans effort."
+      "title": "Fonctionnalités Admin | KamerSchool",
+      "description": "Découvrez les puissants outils d'administration de KamerSchool : gérez les classes, élèves, résultats, finances, emplois du temps et la communication scolaire sans effort."
     },
     "ParentsFeaturesPage": {
-      "title": "Fonctionnalités Parents & Élèves | Kamerschools",
-      "description": "Découvrez comment l'application mobile Kamerschools connecte les parents et informe les élèves avec un accès en temps réel aux résultats, actualités et dossiers scolaires."
+      "title": "Fonctionnalités Parents & Élèves | KamerSchool",
+      "description": "Découvrez comment l'application mobile KamerSchool connecte les parents et informe les élèves avec un accès en temps réel aux résultats, actualités et dossiers scolaires."
     },
     "ContactPage": {
-      "title": "Contactez-Nous | Kamerschools",
-      "description": "Prenez contact avec l'équipe Kamerschools. Posez vos questions, demandez une démo, ou apprenez-en plus sur nos solutions de gestion scolaire pour le Cameroun.",
-      "ogTitle": "Kamerschools : Contactez Notre Équipe Aujourd'hui",
-      "ogDescription": "Contactez Kamerschools pour obtenir de l'aide avec notre logiciel de gestion scolaire ou pour en savoir plus sur la façon dont nous pouvons aider votre école camerounaise.",
-      "ogImageAlt": "Illustration de l'équipe de support de Kamerschools.",
-      "keywords": "contacter Kamerschools, support Kamerschools, demande information logiciel scolaire Cameroun, demande démo Kamerschools"
+      "title": "Contactez-Nous | KamerSchool",
+      "description": "Prenez contact avec l'équipe KamerSchool. Posez vos questions, demandez une démo, ou apprenez-en plus sur nos solutions de gestion scolaire pour le Cameroun.",
+      "ogTitle": "KamerSchool : Contactez Notre Équipe Aujourd'hui",
+      "ogDescription": "Contactez KamerSchool pour obtenir de l'aide avec notre logiciel de gestion scolaire ou pour en savoir plus sur la façon dont nous pouvons aider votre école camerounaise.",
+      "ogImageAlt": "Illustration de l'équipe de support de KamerSchool.",
+      "keywords": "contacter KamerSchool, support KamerSchool, demande information logiciel scolaire Cameroun, demande démo KamerSchool"
     }
   },
   "RequestDemoModal": {
-    "modalTitle": "Demandez votre démonstration gratuite de Kamerschools",
+    "modalTitle": "Demandez votre démonstration gratuite de KamerSchool",
     "step1": {
       "title": "Vos coordonnées",
       "fullNameLabel": "Nom complet*",
@@ -101,7 +346,7 @@
     },
     "step3": {
       "title": "Vos priorités principales",
-      "goalsLabel": "Sur quoi Kamerschools devrait-il principalement vous aider ?",
+      "goalsLabel": "Sur quoi KamerSchool devrait-il principalement vous aider ?",
       "goalsSubtext": "Sélectionnez jusqu’à 3 domaines clés (cela nous aide à adapter la démonstration).",
       "otherGoalLabel": "Un autre objectif spécifique ?",
       "otherGoalPlaceholder": "Décrivez brièvement une autre priorité..."
@@ -163,11 +408,12 @@
     "apiDocumentation": "Documentation API",
     "aboutUs": "À Propos de Nous",
     "careers": "Carrières",
-    "blog": "Blog"
+    "blog": "Blog",
+    "tagline": "Outils Modernes. Écoles Intelligentes."
   },
   "ContactPage": {
     "title": "Contactez-Nous",
-    "subtitle": "Nous sommes là pour répondre à vos questions, vous offrir de l’assistance ou planifier une démonstration personnalisée de Kamerschools. N'hésitez pas à nous écrire !",
+    "subtitle": "Nous sommes là pour répondre à vos questions, vous offrir de l’assistance ou planifier une démonstration personnalisée de KamerSchool. N'hésitez pas à nous écrire !",
     "form": {
       "title": "Envoyez-nous un message",
       "name": "Nom complet",
@@ -180,8 +426,7 @@
       "submitting": "Envoi en cours...",
       "successTitle": "Message envoyé !",
       "successMessage": "Merci de nous avoir contactés. Nous vous répondrons dans les plus brefs délais.",
-      "sendAnother": "Envoyer un autre message",
-      "errorGeneric": "Une erreur est survenue. Veuillez réessayer."
+      "sendAnother": "Envoyer un autre message"
     },
     "details": {
       "directTitle": "Contact direct",
@@ -206,7 +451,7 @@
         "func2": "Accès rapide au résumé des derniers résultats.",
         "func3": "Fil d'actualité des annonces de l'école.",
         "func4": "Événements importants à venir du calendrier.",
-        "mockupAlt": "Écran d'accueil de l'application Kamerschools pour parents"
+        "mockupAlt": "Écran d'accueil de l'application KamerSchool pour parents"
       },
       "resultsTab": {
         "title": "Restez informé de chaque note et résultat",
@@ -214,7 +459,7 @@
         "func1": "Voir les résultats par séquence, trimestre et année.",
         "func2": "Notes détaillées par matière, classements et moyennes de classe.",
         "func3": "Présentation claire de la performance globale et du statut.",
-        "mockupAlt": "Écran des résultats académiques de l'application Kamerschools pour parents"
+        "mockupAlt": "Écran des résultats académiques de l'application KamerSchool pour parents"
       },
       "analysisTab": {
         "title": "Une vue claire de l'évolution scolaire de votre enfant",
@@ -223,7 +468,7 @@
         "func2": "Comparaison entre la moyenne de l’élève et celle de la classe.",
         "func3": "Identification des points forts par matière.",
         "func4": "Mise en évidence des points à améliorer.",
-        "mockupAlt": "Écran d'analyse de performance de l'application Kamerschools"
+        "mockupAlt": "Écran d'analyse de performance de l'application KamerSchool"
       },
       "attendanceTab": {
         "title": "Surveillez la présence scolaire",
@@ -231,7 +476,7 @@
         "func1": "Résumé complet de la présence (taux, présent, absent, en retard).",
         "func2": "Liste détaillée des présences quotidiennes avec statut.",
         "func3": "Filtrer les enregistrements par date ou statut.",
-        "mockupAlt": "Écran de suivi de présence de l'application Kamerschools"
+        "mockupAlt": "Écran de suivi de présence de l'application KamerSchool"
       },
       "feesTab": {
         "title": "Suivi clair et simple des frais",
@@ -239,7 +484,7 @@
         "func1": "Vue d’ensemble des frais par année scolaire.",
         "func2": "Suivi du total dû, total payé, et solde actuel.",
         "func3": "Barre de progression visuelle pour suivre l’état des paiements.",
-        "mockupAlt": "Écran de gestion des frais de l'application Kamerschools"
+        "mockupAlt": "Écran de gestion des frais de l'application KamerSchool"
       },
       "notifications": {
         "title": "Ne manquez jamais une information importante",
@@ -247,7 +492,7 @@
         "func1": "Liste centralisée de toutes les notifications scolaires.",
         "func2": "Notifications classées par catégorie pour plus de clarté.",
         "func3": "Horodatage de chaque notification.",
-        "mockupAlt": "Écran des notifications de l'application Kamerschools"
+        "mockupAlt": "Écran des notifications de l'application KamerSchool"
       },
       "socialFeed": {
         "title": "Vivez le quotidien scolaire de votre enfant",
@@ -255,7 +500,7 @@
         "func1": "Fil chronologique des publications et mises à jour de l’école.",
         "func2": "Voir le contenu des publications, y compris images et médias.",
         "func3": "Interagir avec les publications (likes, commentaires).",
-        "mockupAlt": "Fil social de l'application Kamerschools"
+        "mockupAlt": "Fil social de l'application KamerSchool"
       },
       "announcements": {
         "title": "Recevez les communications officielles de l’école",
@@ -263,7 +508,7 @@
         "func1": "Accès à une liste dédiée aux annonces officielles.",
         "func2": "Lire le contenu complet des annonces.",
         "func3": "Voir les dates et les indicateurs d’urgence.",
-        "mockupAlt": "Écran des annonces scolaires de l'application Kamerschools"
+        "mockupAlt": "Écran des annonces scolaires de l'application KamerSchool"
       },
       "calendar": {
         "title": "Planifiez avec le calendrier scolaire",
@@ -271,12 +516,12 @@
         "func1": "Affichage mensuel interactif du calendrier.",
         "func2": "Événements clairement indiqués aux dates concernées.",
         "func3": "Voir la liste des événements pour chaque jour sélectionné.",
-        "mockupAlt": "Écran du calendrier scolaire de l'application Kamerschools"
+        "mockupAlt": "Écran du calendrier scolaire de l'application KamerSchool"
       },
       "finalCta": {
-        "title": "Vous voulez Kamerschools dans l’école de votre enfant ?",
-        "subtitle": "Partagez les avantages de Kamerschools avec l’administration de l’école et contribuez à moderniser l'expérience scolaire de votre communauté.",
-        "buttonText": "Parlez de Kamerschools à l’école",
+        "title": "Vous voulez KamerSchool dans l’école de votre enfant ?",
+        "subtitle": "Partagez les avantages de KamerSchool avec l’administration de l’école et contribuez à moderniser l'expérience scolaire de votre communauté.",
+        "buttonText": "Parlez de KamerSchool à l’école",
         "adminCtaPrompt": "Vous êtes un administrateur d'école ?"
       }
     },
@@ -298,7 +543,7 @@
         "func2": "Indicateurs clés de performance académique.",
         "func3": "Fil des dernières annonces de l'école.",
         "func4": "Événements à venir du calendrier en un coup d'œil.",
-        "mockupAlt": "Aperçu du Tableau de Bord Admin Kamerschools"
+        "mockupAlt": "Aperçu du Tableau de Bord Admin KamerSchool"
       },
       "classStudent": {
         "title": "Maîtrisez Vos Classes et Vos Élèves",
@@ -306,7 +551,7 @@
         "func1": "Bases de données centralisées des classes et des élèves.",
         "func2": "Vues détaillées des classes : présences, listes d'élèves (PDF/CSV), emplois du temps, matières.",
         "func3": "Dossiers élèves complets : résultats scolaires, frais, discipline.",
-        "mockupAlt": "Interface de Gestion des Classes et des Élèves Kamerschools"
+        "mockupAlt": "Interface de Gestion des Classes et des Élèves KamerSchool"
       },
       "results": {
         "title": "Résultats et Performance Académique, Simplifiés",
@@ -315,7 +560,7 @@
         "func2": "Calcul automatisé des moyennes, des rangs et des résultats globaux.",
         "func3": "Générez et téléchargez les bulletins de notes individuels des élèves (PDF).",
         "func4": "Accédez aux synthèses des résultats de l'école par classe/année.",
-        "mockupAlt": "Traitement des Résultats et Génération des Bulletins Kamerschools"
+        "mockupAlt": "Traitement des Résultats et Génération des Bulletins KamerSchool"
       },
       "analytics": {
         "title": "Révélez des Informations Clés sur l'École avec les Analyses",
@@ -324,16 +569,16 @@
         "func2": "Ventilation des performances par classe, matière et élève.",
         "func3": "Identifiez les tendances et les domaines nécessitant une attention particulière.",
         "func4": "Fonctionnalités de reporting personnalisables.",
-        "mockupAlt": "Graphiques d'Analyses Académiques et de Reporting Kamerschools"
+        "mockupAlt": "Graphiques d'Analyses Académiques et de Reporting KamerSchool"
       },
       "enrollments": {
         "title": "Inscriptions et Transitions Facilitées",
         "benefit": "Simplifiez l'ensemble du cycle de vie des inscriptions des élèves, des nouvelles admissions aux promotions interclasses et aux transferts, en garantissant des dossiers précis.",
         "func1": "Inscrivez efficacement les nouveaux élèves avec des formulaires personnalisables.",
         "func2": "Gérez la progression des élèves vers de nouvelles classes chaque année académique.",
-        "func3": "Facilitez les transferts d'élèves entre les établissements utilisant Kamerschools.",
+        "func3": "Facilitez les transferts d'élèves entre les établissements utilisant KamerSchool.",
         "func4": "Maintenez un historique clair et vérifiable de toutes les inscriptions.",
-        "mockupAlt": "Système de Gestion des Inscriptions des Élèves Kamerschools"
+        "mockupAlt": "Système de Gestion des Inscriptions des Élèves KamerSchool"
       },
       "finance": {
         "title": "Prenez le Contrôle des Finances de l'École",
@@ -343,7 +588,7 @@
         "func3": "Enregistrez et suivez en toute sécurité tous les paiements (espèces, banque, paiement mobile).",
         "func4": "Surveillez les soldes impayés et générez des rappels de paiement.",
         "func5": "Outils complets de reporting financier et de rapprochement.",
-        "mockupAlt": "Gestion des Frais et Suivi Financier Kamerschools"
+        "mockupAlt": "Gestion des Frais et Suivi Financier KamerSchool"
       },
       "scheduling": {
         "title": "Planification Efficace et Gestion du Personnel",
@@ -351,7 +596,7 @@
         "func1": "Créez, gérez et publiez les emplois du temps des classes et des enseignants.",
         "func2": "Maintenez une base de données complète de tout le personnel enseignant.",
         "func3": "Consultez les profils des enseignants, les emplois du temps attribués et les données de performance.",
-        "mockupAlt": "Gestion des Emplois du Temps et des Enseignants Kamerschools"
+        "mockupAlt": "Gestion des Emplois du Temps et des Enseignants KamerSchool"
       },
       "communication": {
         "title": "Connectez et Informez Votre Communauté Scolaire",
@@ -360,11 +605,11 @@
         "func2": "Diffusez les annonces officielles de l'école à des publics ciblés.",
         "func3": "Créez et gérez un calendrier des événements à l'échelle de l'école.",
         "func4": "Administrez les paramètres de l'école et gérez les comptes utilisateurs du personnel avec des permissions.",
-        "mockupAlt": "Plateforme de Communication Scolaire Kamerschools : Fil d'Actualité, Annonces, Calendrier"
+        "mockupAlt": "Plateforme de Communication Scolaire KamerSchool : Fil d'Actualité, Annonces, Calendrier"
       },
       "finalCta": {
         "title": "Prêt à Transformer la Gestion de Votre École ?",
-        "subtitle": "Voyez par vous-même comment Kamerschools peut simplifier vos tâches quotidiennes, responsabiliser votre personnel et engager vos parents. Planifiez votre démo personnalisée dès aujourd'hui !"
+        "subtitle": "Voyez par vous-même comment KamerSchool peut simplifier vos tâches quotidiennes, responsabiliser votre personnel et engager vos parents. Planifiez votre démo personnalisée dès aujourd'hui !"
       }
     }
   },
@@ -374,12 +619,21 @@
     }
   },
   "Footer": {
-    "description": "Kamerschools révolutionne la gestion de l'éducation avec des outils intuitifs et puissants pour les écoles, les enseignants, les parents et les élèves, favorisant un écosystème d'apprentissage connecté et efficace.",
+    "description": "KamerSchool révolutionne la gestion de l'éducation avec des outils intuitifs et puissants pour les écoles, les enseignants, les parents et les élèves, favorisant un écosystème d'apprentissage connecté et efficace.",
     "sections": {
       "company": "Société",
       "product": "Produit",
       "resources": "Ressources",
       "legal": "Légal"
+    },
+    "links": {
+      "aboutUs": "À propos",
+      "careers": "Carrières",
+      "blog": "Blog",
+      "supportCenter": "Centre d'assistance",
+      "faq": "FAQ",
+      "terms": "Conditions d'Utilisation",
+      "privacy": "Politique de Confidentialité"
     },
     "aboutUs": "À Propos de Nous",
     "careers": "Carrières",
@@ -392,36 +646,36 @@
     "privacyPolicy": "Politique de Confidentialité",
     "termsOfService": "Conditions d'Utilisation",
     "cookiePolicy": "Politique de Cookies",
-    "copyrightNotice": "Tous droits réservés. Kamerschools est une marque déposée.",
+    "copyrightNotice": "Tous droits réservés. KamerSchool est une marque déposée.",
     "backToTop": "Retour en Haut"
   },
   "HomePage": {
     "FaqSection": {
       "title": "Réponses à Vos Questions",
-      "subtitle": "Trouvez rapidement des réponses aux questions courantes sur Kamerschools et découvrez comment nous pouvons aider votre établissement.",
+      "subtitle": "Trouvez rapidement des réponses aux questions courantes sur KamerSchool et découvrez comment nous pouvons aider votre établissement.",
       "q1_getting_started": {
-        "question": "Comment démarrer avec Kamerschools ? Quel est le processus d'intégration ?",
+        "question": "Comment démarrer avec KamerSchool ? Quel est le processus d'intégration ?",
         "answer": "C’est simple ! Il vous suffit de demander une démo via notre site web. Notre équipe vous contactera ensuite pour comprendre les besoins spécifiques de votre école, vous proposer une démonstration personnalisée et vous accompagner dans le processus d’intégration, qui inclut la migration des données et la configuration initiale."
       },
       "q2_setup_time": {
-        "question": "Combien de temps faut-il pour mettre en place Kamerschools ?",
+        "question": "Combien de temps faut-il pour mettre en place KamerSchool ?",
         "answer": "Le temps de mise en place dépend de la taille de votre école et de la complexité de vos données. Une configuration de base peut être prête en quelques jours, tandis qu’une migration complète peut prendre 1 à 2 semaines. Nous travaillons en étroite collaboration avec vous pour garantir une transition fluide."
       },
       "q3_ease_of_use": {
-        "question": "Kamerschools est-il difficile à utiliser ?",
-        "answer": "Pas du tout ! Kamerschools est conçu pour être facile à prendre en main. Nous mettons l'accent sur une interface intuitive qui ne nécessite que peu de compétences techniques. La plupart des administrateurs et enseignants trouvent la plateforme très facile à utiliser dès le premier jour."
+        "question": "KamerSchool est-il difficile à utiliser ?",
+        "answer": "Pas du tout ! KamerSchool est conçu pour être facile à prendre en main. Nous mettons l'accent sur une interface intuitive qui ne nécessite que peu de compétences techniques. La plupart des administrateurs et enseignants trouvent la plateforme très facile à utiliser dès le premier jour."
       },
       "q4_training": {
         "question": "Proposez-vous une formation pour notre personnel ?",
-        "answer": "Oui, la formation est une partie essentielle de notre processus d’intégration. Nous offrons des sessions de formation personnalisées pour le personnel administratif et les enseignants afin que chacun soit à l’aise et efficace avec Kamerschools."
+        "answer": "Oui, la formation est une partie essentielle de notre processus d’intégration. Nous offrons des sessions de formation personnalisées pour le personnel administratif et les enseignants afin que chacun soit à l’aise et efficace avec KamerSchool."
       },
       "q5_support": {
         "question": "Quel type d’assistance proposez-vous ?",
         "answer": "Nous offrons une assistance dédiée via plusieurs canaux, notamment par e-mail, téléphone, et éventuellement sur site pour les grandes structures au Cameroun. Notre objectif est de fournir des solutions rapides et efficaces à tous vos problèmes ou questions."
       },
       "q6_educational_systems": {
-        "question": "Kamerschools prend-il en charge les systèmes éducatifs anglophone et francophone ?",
-        "answer": "Absolument. Kamerschools est conçu en tenant compte du contexte éducatif camerounais et peut s’adapter aux exigences spécifiques des systèmes anglophone (basé sur le GCE) et francophone (basé sur le Baccalauréat), y compris leurs méthodes de notation et structures de matières."
+        "question": "KamerSchool prend-il en charge les systèmes éducatifs anglophone et francophone ?",
+        "answer": "Absolument. KamerSchool est conçu en tenant compte du contexte éducatif camerounais et peut s’adapter aux exigences spécifiques des systèmes anglophone (basé sur le GCE) et francophone (basé sur le Baccalauréat), y compris leurs méthodes de notation et structures de matières."
       },
       "q7_data_security": {
         "question": "La sécurité des données de notre école est-elle garantie ? Où sont-elles hébergées ?",
@@ -438,7 +692,7 @@
       "headline": "Voix du Succès : Ce que Dit Notre Communauté"
     },
     "Footer": {
-      "description": "Kamerschools révolutionne la gestion de l'éducation avec des outils intuitifs et puissants pour les écoles, les enseignants, les parents et les élèves.",
+      "description": "KamerSchool révolutionne la gestion de l'éducation avec des outils intuitifs et puissants pour les écoles, les enseignants, les parents et les élèves.",
       "sections": {
         "company": "Société",
         "product": "Produit",
@@ -481,7 +735,7 @@
         "cta": "Découvrez les Fonctionnalités Admin",
         "ctaSecondary": "Demander une Démo Admin",
         "ctaSecondaryLink": "/contact?role=admin",
-        "imageAlt": "Vue du tableau de bord Kamerschools sur une tablette, montrant les fonctionnalités administratives."
+        "imageAlt": "Vue du tableau de bord KamerSchool sur une tablette, montrant les fonctionnalités administratives."
       },
       "ForParents": {
         "tag": "Pour les Parents et Tuteurs",
@@ -508,13 +762,13 @@
         "cta": "Découvrez le Portail Parents",
         "ctaSecondary": "En Savoir Plus pour les Parents",
         "ctaSecondaryLink": "/parents/learn-more",
-        "imageAlt": "Interface de l'application parent Kamerschools sur un téléphone mobile montrant l'aperçu de l'élève.",
-        "imageAlt2": "Interface de l'application parent Kamerschools sur un téléphone mobile montrant les résultats détaillés."
+        "imageAlt": "Interface de l'application parent KamerSchool sur un téléphone mobile montrant l'aperçu de l'élève.",
+        "imageAlt2": "Interface de l'application parent KamerSchool sur un téléphone mobile montrant les résultats détaillés."
       }
     },
     "CreativeCta": {
       "headline": "Libérez le Potentiel Futur de Votre École.",
-      "subtext": "Voyez par vous-même comment Kamerschools transforme les défis quotidiens en opportunités de croissance et d'excellence. Une démo personnalisée vous attend pour éclairer votre chemin.",
+      "subtext": "Voyez par vous-même comment KamerSchool transforme les défis quotidiens en opportunités de croissance et d'excellence. Une démo personnalisée vous attend pour éclairer votre chemin.",
       "cta": "Réservez Votre Démo Personnalisée",
       "ctaLink": "/book-demo"
     },
@@ -535,8 +789,8 @@
           "description": "Des canaux de communication fragmentés ou unidirectionnels peuvent rendre difficile la promotion d'un véritable partenariat collaboratif avec les parents et la construction d'une communauté scolaire dynamique et connectée."
         }
       },
-      "solutionHeadline": "Présentation de Kamerschools : La Voie Intelligente vers l'Avenir",
-      "solutionDescription": "Kamerschools fournit une plateforme unifiée et intuitive conçue pour éliminer ces frustrations, rationaliser vos opérations et permettre à toute votre communauté scolaire de prospérer.",
+      "solutionHeadline": "Présentation de KamerSchool : La Voie Intelligente vers l'Avenir",
+      "solutionDescription": "KamerSchool fournit une plateforme unifiée et intuitive conçue pour éliminer ces frustrations, rationaliser vos opérations et permettre à toute votre communauté scolaire de prospérer.",
       "solutionBenefits": {
         "benefit1": "Révélez des Informations Exploitables grâce à des Analyses Puissantes",
         "benefit2": "Automatisez les Flux de Travail et Réduisez Radicalement la Paperasse",
@@ -546,7 +800,7 @@
       "ctaBookDemo": "Réservez Votre Démo Personnalisée"
     },
     "Hero": {
-      "headline": "KamerSchools : Dynamiser l'Éducation au Cameroun pour la Génération Numérique",
+      "headline": "KamerSchool : Dynamiser l'Éducation au Cameroun pour la Génération Numérique",
       "subheadline": "La plateforme tout-en-un pour les collèges et lycées, simplifiant la gestion des présences, des résultats, des frais et la communication avec les parents. Conçue pour les administrateurs, appréciée par les parents et les élèves.",
       "ctaPrimary": "Demander une Démo",
       "ctaSecondary": "Découvrir l'Appli Parents",
@@ -559,34 +813,34 @@
       }
     },
     "FeatureShowcase": {
-      "headline": "Kamerschools en Action",
+      "headline": "KamerSchool en Action",
       "subheadline": "Découvrez comment nos fonctionnalités essentielles optimisent les opérations scolaires et renforcent l'engagement communautaire, le tout sur une plateforme intuitive.",
       "closeMediaViewer": "Fermer le visualiseur de médias",
       "features": {
         "results": {
           "title": "Résultats ultra-rapides",
           "description": "Calculez et publiez les résultats des élèves pour les séquences, trimestres et examens annuels en quelques secondes. Fini les feuilles de calcul manuelles.",
-          "altText": "Démonstration du calcul rapide des résultats dans Kamerschools."
+          "altText": "Démonstration du calcul rapide des résultats dans KamerSchool."
         },
         "analytics": {
           "title": "Analyses académiques approfondies",
           "description": "Obtenez des informations instantanées sur les performances des élèves, des classes et des matières. Identifiez les tendances et les points à améliorer grâce à des visualisations claires.",
-          "altText": "Tableau de bord des analyses académiques de Kamerschools montrant des graphiques de performance."
+          "altText": "Tableau de bord des analyses académiques de KamerSchool montrant des graphiques de performance."
         },
         "communication": {
           "title": "Engagez toute votre communauté",
           "description": "Partagez sans effort les mises à jour via le fil d'actualité de l'école, envoyez des annonces importantes et gérez le calendrier des événements de votre école.",
-          "altText": "Vue composite des outils de communication de Kamerschools : fil d'actualité, annonces, calendrier."
+          "altText": "Vue composite des outils de communication de KamerSchool : fil d'actualité, annonces, calendrier."
         },
         "finance": {
           "title": "Suivi financier simplifié",
           "description": "Créez des structures de frais, affectez-les aux élèves, enregistrez les paiements et suivez les soldes avec facilité. Gardez les finances de votre école organisées.",
-          "altText": "Interface de gestion des frais de Kamerschools montrant les statuts des frais des élèves."
+          "altText": "Interface de gestion des frais de KamerSchool montrant les statuts des frais des élèves."
         },
         "attendance": {
           "title": "Suivi des présences en temps réel",
           "description": "Enregistrez et suivez rapidement les présences des élèves pour chaque cours. Générez des rapports et tenez les parents informés instantanément via l'application.",
-          "altText": "Marquage des présences des élèves en temps réel avec Kamerschools."
+          "altText": "Marquage des présences des élèves en temps réel avec KamerSchool."
         }
       }
     },
@@ -603,23 +857,23 @@
     },
     "ForAdmins": {
       "headline": "Renforcer le Leadership Scolaire",
-      "text": "Gagnez une efficacité inégalée, prenez des décisions basées sur les données, améliorez la communication au sein de votre institution et réduisez considérablement la charge administrative avec Kamerschools.",
+      "text": "Gagnez une efficacité inégalée, prenez des décisions basées sur les données, améliorez la communication au sein de votre institution et réduisez considérablement la charge administrative avec KamerSchool.",
       "cta": "Découvrez les Fonctionnalités Admin"
     },
     "ForParents": {
       "headline": "Restez Connectés, Restez Informés",
-      "text": "L'Application Parents Kamerschools offre un accès en temps réel aux progrès scolaires de votre enfant, aux annonces de l'école, aux événements et à des canaux de communication directs, le tout depuis votre appareil mobile.",
+      "text": "L'Application Parents KamerSchool offre un accès en temps réel aux progrès scolaires de votre enfant, aux annonces de l'école, aux événements et à des canaux de communication directs, le tout depuis votre appareil mobile.",
       "cta": "En Savoir Plus sur l'Appli Parents"
     },
     "FinalCTA": {
       "headline": "Prêt à Transformer Votre École ?",
-      "cta": "Commencez avec Kamerschools"
+      "cta": "Commencez avec KamerSchool"
     }
   },
   "hello": "salue",
   "login": {
-    "loginMetaTitle": "Se Connecter - Kamerschools",
-    "loginMetaDescription": "Connectez-vous pour accéder à votre compte Kamerschools.",
+    "loginMetaTitle": "Se Connecter - KamerSchool",
+    "loginMetaDescription": "Connectez-vous pour accéder à votre compte KamerSchool.",
     "loading": "Chargement...",
     "signInTitle": "Connectez-vous",
     "usernameLabel": "Nom d'utilisateur",
@@ -650,7 +904,11 @@
     "enrollments": "Inscriptions",
     "feesManagement": "Gestion des Frais",
     "discipline": "Gestion De La Discipline",
-    "timetableManagement": "Gestion Des Horaires"
+    "timetableManagement": "Gestion Des Horaires",
+    "confirmLogoutTitle": "Êtes-vous sûr ?",
+    "confirmLogoutDescription": "Vous allez être redirigé vers la page de connexion.",
+    "cancel": "Annuler",
+    "tagline": "Outils malins. Écoles brillantes."
   },
   "settingsPage": {
     "title": "Paramètres",
@@ -724,20 +982,27 @@
       "resetError": "Échec de la réinitialisation du mot de passe."
     },
     "security": {
-      "title": "Sécurité du compte",
-      "changePassword": "Changer le mot de passe",
+      "changePasswordTitle": "Changer votre mot de passe",
+      "changePasswordDescription": "Mettez à jour le mot de passe de votre compte. Choisissez un mot de passe fort et unique.",
       "currentPassword": "Mot de passe actuel",
       "newPassword": "Nouveau mot de passe",
       "confirmPassword": "Confirmer le nouveau mot de passe",
-      "passwordMismatch": "Les nouveaux mots de passe ne correspondent pas.",
-      "passwordMinLength": "Le mot de passe doit contenir au moins 8 caractères.",
-      "savePasswordButton": "Mettre à jour le mot de passe",
-      "changeSuccess": "Mot de passe mis à jour avec succès.",
-      "changeError": "Échec de la mise à jour du mot de passe. Vérifiez le mot de passe actuel.",
-      "forgotPasswordLink": "Mot de passe oublié ?"
+      "savePasswordButton": "Changer le mot de passe",
+      "changeSuccess": "Mot de passe mis à jour avec succès !",
+      "changeErrorDefault": "Impossible de mettre à jour le mot de passe. Veuillez vérifier votre saisie et réessayer."
     },
     "loading": "Chargement...",
     "error": "Une erreur est survenue."
+  },
+  "zodValidation": {
+    "currentPasswordRequired": "Le mot de passe actuel est requis.",
+    "passwordMinLength": "Le mot de passe doit contenir au moins {min} caractères.",
+    "passwordLowercase": "Le mot de passe doit contenir au moins une lettre minuscule.",
+    "passwordUppercase": "Le mot de passe doit contenir au moins une lettre majuscule.",
+    "passwordNumber": "Le mot de passe doit contenir au moins un chiffre.",
+    "passwordSpecialChar": "Le mot de passe doit contenir au moins un caractère spécial.",
+    "confirmPasswordRequired": "Veuillez confirmer votre nouveau mot de passe.",
+    "passwordMismatch": "Les mots de passe ne correspondent pas."
   },
 
   "topbar": {
@@ -748,7 +1013,10 @@
     "account": "Mon compte",
     "settings": "Paramètres du compte",
     "support": "Support",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "confirmLogoutTitle": "Êtes-vous sûr ?",
+    "confirmLogoutDescription": "Vous allez être redirigé vers la page de connexion.",
+    "cancel": "Annuler"
   },
   "search": {
     "searchPlaceholder": "Rechercher dans votre école...",
@@ -1014,6 +1282,17 @@
     }
   },
   "Classes": {
+    "addedAllSubjects": "{count} nouvelles matières ajoutées.",
+    "availableSubjects": "Matières Disponibles",
+    "searchByNameCode": "Rechercher par nom ou code...",
+    "subjectsFound": "{count} matières trouvées",
+    "addAll": "Tout Ajouter ({count})",
+    "loadingSubjects": "Chargement des matières...",
+    "tryAnotherSearchTermOrClear": "Essayez un autre terme de recherche ou videz le filtre.",
+    "searchSelectedPlaceholder": "Rechercher les matières sélectionnées...",
+    "noSubjectsMatchSearch": "Aucune matière sélectionnée ne correspond à votre recherche.",
+    "educationProfile": "Profil Éducatif",
+    "displayingSubjectsFor": "Affichage des matières pour : {systemName} - Niveau {levelName}",
     "noSubjectsAssigned": "Aucune matière assignée",
     "assignSubject": "Assigner une matière",
     "assignedSubjects": "Matières assignées",
@@ -1052,7 +1331,6 @@
     "technicalSubjects": "sujets techniques",
     "aLevelSubjects": "sujets de niveau a",
     "otherSubjects": "autres sujets",
-    "addAll": "tout ajouter",
     "quickAdd": "ajout rapide",
     "classesTitle": "classes",
     "createClass": "créer une classe",
@@ -1193,7 +1471,6 @@
     "additionalSubjects": "Matières supplémentaires",
     "filterSubjects": "filtrer les sujets...",
     "clearFilter": "effacer le filtre",
-    "availableSubjects": "sujets disponibles",
     "selectedSubjects": "sujets sélectionnés",
     "noSubjectsSelected": "aucun sujet sélectionné",
     "selectSubjectsFromList": "sélectionnez des sujets dans la liste à gauche pour les ajouter à cette classe.",
@@ -1237,6 +1514,7 @@
     "fromDate": "Date de début",
     "toDate": "Date de fin",
     "apply": "Appliquer",
+    "loading": "Chargement...",
     "reset": "Réinitialiser",
     "errorLoadingAttendance": "Erreur lors du chargement des présences",
     "tryAgain": "Réessayer",
@@ -1646,6 +1924,17 @@
     "confirmDeletion": "Confirmer la suppression"
   },
   "Events": {
+    "listView": "Liste",
+    "calendarView": "Calendrier",
+    "eventsFor": "Événements pour le",
+    "noEventsForDate": "Aucun événement pour cette date",
+    "selectAnotherDate": "Sélectionnez une autre date pour voir les événements.",
+    "activeFilters": "Filtres Actifs :",
+    "page": "Page",
+    "of": "de",
+    "calendar": "Calendrier",
+    "list": "Liste",
+    "today": "Aujourd'hui",
     "backToEvents": "Retour aux événements",
     "editEvent": "Modifier l'événement",
     "createEvent": "Créer un événement",
@@ -2072,7 +2361,8 @@
       "totalCoefficient": "Total Coef.",
       "status": "Statut",
       "remarks": "Appréciations",
-      "termLabel": "Trimestre"
+      "termLabel": "Trimestre",
+      "pendingFinalization": "Les résultats globaux sont en attente et n'ont pas encore été finalisés par l'école."
     },
     "Subjects": {
       "title": "Détail par Matière",
@@ -2621,36 +2911,42 @@
     "balancedDistribution": "La classe a une distribution de performance équilibrée. Mettez en place des activités d'enrichissement pour les {highPerforming} élèves performants tout en fournissant un soutien à ceux qui en ont besoin."
   },
   "SubjectAnalysis": {
-    "totalSubjects": "Total Subjects",
-    "avgPassRate": "Avg. Pass Rate",
-    "avgScore": "Avg. Score",
-    "bestSubject": "Best Subject",
-    "tableView": "Table View",
-    "breakdownView": "Breakdown",
-    "subjectPerformanceAnalysis": "Subject Performance Analysis",
-    "filters": "Filters",
-    "sortBy": "Sort By",
-    "averageScore": "Average Score",
-    "passRate": "Pass Rate",
-    "numberOfStudents": "Number of Students",
+    "tableView": "Vue Tableau",
+    "breakdownView": "Vue Détaillée",
+    "totalSubjects": "Total Matières",
+    "avgPassRate": "Taux Réussite Moy.",
+    "avgScore": "Note Moyenne",
+    "bestSubject": "Meilleure Matière",
+    "notApplicable": "N/A",
+    "subjectPerformanceAnalysis": "Analyse des Performances par Matière",
+    "filters": "Filtres",
+    "sortBy": "Trier par",
+    "subjectName": "Nom de la Matière",
+    "filterBySubjectName": "Filtrer par nom de matière...",
+    "averageScore": "Note Moyenne",
+    "passRate": "Taux de Réussite",
+    "numberOfStudents": "Nbr. d'Élèves",
     "coefficient": "Coefficient",
-    "subjectName": "Subject Name",
-    "filterBySubjectName": "Filter by subject name...",
-    "subject": "Subject",
+    "subject": "Matière",
+    "students": "Élèves",
     "performance": "Performance",
-    "gradeDistribution": "Grade Distribution",
-    "students": "Students",
-    "exc": "Exc",
-    "good": "Good",
-    "avg": "Avg",
-    "below": "Below",
-    "noSubjectDataFound": "No subject data found for the selected filters",
-    "performanceBreakdown": "Performance Breakdown",
-    "breakdownTitle": "{type} Breakdown",
-    "sequence": "Sequence",
-    "term": "Term",
-    "noBreakdownForSequences": "No breakdown data available for sequences",
-    "noBreakdownDataAvailable": "No breakdown data available"
+    "gradeDistribution": "Répartition des Notes",
+    "exc": "Exc.",
+    "good": "Bien",
+    "avg": "Moy.",
+    "below": "Faible",
+    "loadingSubjectData": "Chargement des données des matières...",
+    "noSubjectDataFound": "Aucune donnée de matière trouvée pour les filtres sélectionnés.",
+    "performanceBreakdown": "Détail des Performances",
+    "breakdownTitle": "Détail par {type}",
+    "sequence": "Séquence",
+    "term": "Trimestre",
+    "loadingBreakdown": "Chargement des détails...",
+    "noBreakdownForSequences": "La vue détaillée n'est pas disponible pour une seule séquence.",
+    "noBreakdownDataAvailable": "Aucune donnée détaillée n'est disponible pour cette période.",
+    "classBreakdownTitle": "Détail par Classe pour {subjectName}",
+    "class": "Classe",
+    "noClassBreakdownData": "Aucun détail par classe disponible pour cette matière."
   },
   "ClassComp": {
     "noDataTitle": "Aucune donnée disponible",
@@ -2717,52 +3013,179 @@
       "page": "Page {page} de {total}"
     }
   },
+  "BulkExport": {
+    "generateButtonText": "Générer les bulletins",
+    "selectionRequired": "Veuillez d'abord sélectionner une classe et une période d'évaluation.",
+    "jobStartedSuccess": "Tâche démarrée !",
+    "jobStartedDescription": "Génération des bulletins en cours pour la Tâche #{jobId}. Nous vous notifierons quand ce sera prêt.",
+    "jobStartFailed": "Échec du démarrage de la tâche",
+    "trackProgress": "Suivre la progression"
+  },
+  "ExportsPage": {
+    "Remarks": {
+      "notApplicable": "N/A",
+      "excellent": "Excellent",
+      "veryGood": "Très Bien",
+      "good": "Bien",
+      "satisfactory": "Assez Bien",
+      "passing": "Passable",
+      "needsImprovement": "Peut Mieux Faire",
+      "weak": "Faible",
+      "veryWeak": "Très Faible"
+    },
+    "PromotionRemarks": {
+      "promoted": "Remplit tous les critères de promotion.",
+      "conditional": "Promotion conditionnelle avec {subjects} matières validées et une moyenne de {average}/20.",
+      "repeated": "Ne remplit pas les critères de promotion. A validé {subjects} matières avec une moyenne de {average}/20."
+    },
+    "Export": {
+      "PromotionRemarks": {
+        "promoted": "Remplit tous les critères de promotion.",
+        "conditional": "Promotion conditionnelle avec {subjects} matières validées et une moyenne de {average}/20.",
+        "repeated": "Ne remplit pas les critères de promotion. A validé {subjects} matières avec une moyenne de {average}/20."
+      },
+      "remarks": "Appréciations",
+      "subjectsPassed": "Validées : {passed} / {total} matières",
+      "page": "Page",
+      "generated": "Généré le",
+      "reportCardTitle": "BULLETIN DE NOTES DE L'ÉLÈVE",
+      "unknownPeriod": "N/A",
+      "unknownAcademicYear": "N/A",
+      "unknownSchoolName": "Nom de l'école",
+      "unknownStudent": "Élève inconnu",
+      "unknownClass": "Classe inconnue",
+      "telLabel": "Tél",
+      "emailLabel": "Email",
+      "studentLabel": "Élève",
+      "matriculeLabel": "Matricule",
+      "classLabel": "Classe",
+      "dobLabel": "Né(e) le",
+      "pobLabel": "à",
+      "sexLabel": "Sexe",
+      "overallSummary": "Résumé de la performance générale",
+      "averageScore": "Moyenne Générale",
+      "classRank": "Rang",
+      "totalPoints": "Total Points",
+      "classAverage": "Moyenne Classe",
+      "totalCoefficient": "Total Coef.",
+      "decision": "Décision",
+      "passed": "Admis(e)",
+      "failed": "Ajourné(e)",
+      "unknown": "Inconnue",
+      "promotionStatusLabel": "Décision du Conseil",
+      "promotionRemarksLabel": "Appréciation du Conseil",
+      "subjectBreakdown": "Détail par matière",
+      "subject": "Matière",
+      "coefShort": "Coef.",
+      "finalScore": "Moyenne",
+      "rankShort": "Rang",
+      "classAvgShort": "Moy. Classe",
+      "teacher": "Enseignant(e)",
+      "absentShort": "ABS",
+      "remarksLabel": "Appréciations Générales",
+      "deanOfStudiesSignature": "Le Censeur / La Censeure",
+      "principalSignature": "Le Proviseur / La Proviseure",
+      "notAvailableShort": "N/A",
+      "noSubjectData": "Aucune donnée de matière n'est disponible pour cette période.",
+      "noDataError": "Impossible de générer le bulletin : Données de résultats manquantes.",
+      "noSchoolDataError": "Impossible de générer le bulletin : Informations sur l'école manquantes."
+    },
+    "title": "Mes Exports",
+    "requestedBy": "Demandé par {name}",
+    "noJobsTitle": "Aucune tâche d'exportation trouvée",
+    "noJobsDescription": "Lorsque vous générez des bulletins en masse depuis la page des Résultats, les tâches apparaîtront ici pour le suivi et le téléchargement.",
+    "description": "Suivez la progression des générations de bulletins en masse et téléchargez les fichiers terminés.",
+    "tableHeaders": {
+      "jobDetails": "Détails de la tâche",
+      "status": "Statut",
+      "requestedBy": "Demandé par",
+      "actions": "Actions"
+    },
+    "downloadButton": "Télécharger & Générer",
+    "noJobs": "Vous n'avez encore démarré aucune tâche d'exportation en masse.",
+    "errors": {
+      "fetchError": "Impossible de charger les tâches d'exportation.",
+      "noFileUrl": "Le lien de téléchargement n'est pas disponible pour cette tâche.",
+      "generationFailed": "La génération du fichier ZIP a échoué.",
+      "jobFailed": "Raison"
+    },
+    "toasts": {
+      "downloadingData": "Téléchargement des données...",
+      "downloadingDataDesc": "Cela peut prendre un moment pour les grandes classes.",
+      "generatingPdfs": "Génération des PDF...",
+      "creatingZip": "Compression des fichiers...",
+      "creatingZipDesc": "Presque terminé !",
+      "downloadComplete": "Fichier ZIP créé avec succès !",
+      "noStudentsWithResults": "Aucun élève avec des résultats n'a été trouvé dans le fichier de données."
+    }
+  },
+  "Actions": {
+    "title": "Actions",
+    "resultsActions": "Actions sur les résultats"
+  },
   "CommentSection": {
-    "commentsTitle": "Commentaires ({count})",
-    "addCommentPlaceholder": "Ajouter un commentaire...",
+    "addReplyPlaceholder": "Ajouter une réponse publique...",
+    "replyButton": "Répondre",
+    "cancelButton": "Annuler",
+    "commentsTitle": "{count, plural, zero {Commentaires} one {# Commentaire} other {# Commentaires}}",
+    "addCommentPlaceholder": "Ajouter un commentaire public...",
     "postComment": "Publier le commentaire",
-    "posting": "Publication en cours...",
+    "posting": "Publication...",
+    "postingShort": "Publier",
     "pinnedComments": "Commentaires épinglés",
-    "noComments": "Aucun commentaire pour l'instant. Soyez le premier à commenter !",
+    "noComments": "Aucun commentaire pour l'instant. Soyez le premier à réagir !",
     "loadMore": "Charger plus de commentaires",
     "loading": "Chargement...",
-    "error": "Échec du chargement des commentaires. Veuillez réessayer.",
+    "error": "Une erreur est survenue lors de la récupération des commentaires.",
+    "errorFetchingMore": "Impossible de charger plus de commentaires. Veuillez réessayer.",
     "retry": "Réessayer",
+    "replyPlaceholder": "Répondre à {user}...",
+
+    "toast": {
+      "commentAdded": "Commentaire ajouté avec succès !",
+      "replyAdded": "Réponse ajoutée avec succès !",
+      "addCommentError": "Erreur lors de l'ajout du commentaire : {message}",
+      "commentDeleted": "Commentaire supprimé.",
+      "deleteCommentError": "Erreur lors de la suppression du commentaire : {message}",
+      "pinUpdated": "Statut d'épingle mis à jour.",
+      "pinError": "Erreur lors de la mise à jour du statut d'épingle : {message}",
+      "likeError": "Impossible de mettre à jour le like : {message}"
+    },
+
     "comment": {
       "pin": "Épingler le commentaire",
       "unpin": "Désépingler le commentaire",
+      "pinnedBadge": "Épinglé",
       "delete": "Supprimer",
       "report": "Signaler",
-      "like": "Aimer",
+      "like": "J'aime",
       "reply": "Répondre",
-      "viewReplies": "Voir {count} {count, plural, one {réponse} other {réponses}}",
-      "hideReplies": "Masquer {count} {count, plural, one {réponse} other {réponses}}"
+      "cancel": "Annuler",
+      "hideReplies": "Masquer {count, plural, one {la réponse} other {les # réponses}}",
+      "viewReplies": "Afficher {count, plural, one {la réponse} other {les # réponses}}"
     },
-    "toast": {
-      "commentAdded": "Commentaire ajouté avec succès",
-      "commentDeleted": "Commentaire supprimé avec succès",
-      "pinUpdated": "Statut d'épinglage du commentaire mis à jour",
-      "addCommentError": "Échec de l'ajout du commentaire : {message}"
-    }
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible."
   },
   "CreateEditPostDialog": {
-    "createTitle": "Créer un nouveau message",
-    "editTitle": "Modifier le message",
-    "createDescription": "Partagez des mises à jour avec votre communauté scolaire.",
-    "editDescription": "Apportez des modifications à votre message ci-dessous.",
+    "editTitle": "Modifier la publication",
+    "createTitle": "Créer une nouvelle publication",
+    "editDescription": "Apportez des modifications à votre publication ici. Cliquez sur enregistrer lorsque vous avez terminé. La modification des médias remplacera tous les fichiers existants.",
+    "createDescription": "Partagez une mise à jour avec votre communauté scolaire. Ajoutez un titre, du contenu et des médias.",
     "titleLabel": "Titre",
-    "titlePlaceholder": "Entrez le titre du message",
+    "titlePlaceholder": "ex: Semaine de l'esprit scolaire",
     "contentLabel": "Contenu",
-    "contentPlaceholder": "Qu'est-ce qui vous préoccupe ?",
-    "addMedia": "Ajouter des photos/vidéos",
+    "contentPlaceholder": "Écrivez le contenu de votre publication ici...",
+    "mediaLabel": "Média (Images/Vidéos)",
+    "dragAndDrop": "Glissez-déposez des fichiers ici",
+    "orClick": "ou cliquez pour sélectionner des fichiers",
+    "previews": "Aperçus des fichiers",
     "cancel": "Annuler",
-    "post": "Publier",
-    "updatePost": "Mettre à jour le message",
-    "saving": "Enregistrement...",
+    "updatePost": "Enregistrer les modifications",
+    "createPostAction": "Créer la publication",
     "toast": {
-      "postCreated": "Message créé avec succès",
-      "postUpdated": "Message mis à jour avec succès",
-      "error": "{message}"
+      "postCreated": "Publication créée avec succès !",
+      "postUpdated": "Publication mise à jour avec succès !",
+      "error": "Une erreur est survenue : {message}"
     }
   },
   "CreatePostTrigger": {
@@ -2785,30 +3208,28 @@
     "searchPlaceholder": "Rechercher des messages..."
   },
   "PostCard": {
-    "untitled": "Message sans titre",
+    "untitled": "Publication sans titre",
+    "noContent": "Aucun contenu fourni.",
     "draft": "Brouillon",
-    "noContent": "Aucun contenu",
-    "readMore": "Lire plus",
-    "showLess": "Montrer moins",
-    "showAllMedia": "Montrer tous les médias ({count})",
-    "postOptions": "Options du message",
-    "editPost": "Modifier le message",
+    "postOptions": "Options de la publication",
+    "editPost": "Modifier",
     "publish": "Publier",
     "unpublish": "Dépublier",
     "copyLink": "Copier le lien",
     "delete": "Supprimer",
+    "readMore": "Lire la suite",
+    "showLess": "Afficher moins",
+    "showAllMedia": "Afficher les {count} médias",
+    "likeTooltip": "Aimer cette publication",
+    "commentTooltip": "Voir les commentaires",
+    "viewTooltip": "Nombre total de vues",
     "toast": {
-      "deleteSuccess": "Message supprimé avec succès",
-      "deleteError": "Échec de la suppression du message : {message}",
-      "publishSuccess": "Message publié avec succès",
-      "publishError": "Échec de la publication du message : {message}",
-      "unpublishSuccess": "Message dépublié avec succès",
-      "unpublishError": "Échec de la dépublication du message : {message}",
-      "shareSuccess": "Message partagé avec succès",
-      "likeError": "Échec de {action} le message : {message}",
-      "bookmarkComingSoon": "Fonctionnalité de signet bientôt disponible !",
-      "deleting": "Suppression du message...",
-      "deleteFailed": "Échec de la suppression du message"
+      "deleteSuccess": "Publication supprimée avec succès.",
+      "publishSuccess": "Publication publiée avec succès.",
+      "unpublishSuccess": "Publication dépubliée avec succès.",
+      "shareSuccess": "Lien de la publication copié dans le presse-papiers !",
+      "likeError": "Échec de l'action '{action}' sur la publication : {message}",
+      "deleting": "Suppression de la publication..."
     }
   },
   "PostList": {
@@ -3779,6 +4200,7 @@
     }
   },
   "Finance": {
+    "recordPaymentFor": "Enregistrer Paiement pour {studentName}",
     "PartiallyPaid": "Partiellement Payé",
     "name": "Nom",
     "description": "Description",
@@ -4079,9 +4501,35 @@
     }
   },
   "Export": {
-    "exportButtonTooltip": "Exporter les données",
+    "Remarks": {
+      "notApplicable": "N/A",
+      "excellent": "Excellent",
+      "veryGood": "Très Bien",
+      "good": "Bien",
+      "satisfactory": "Assez Bien",
+      "passing": "Passable",
+      "needsImprovement": "Peut Mieux Faire",
+      "weak": "Faible",
+      "veryWeak": "Très Faible"
+    },
+    "PromotionRemarks": {
+      "promoted": "Remplit tous les critères de promotion.",
+      "conditional": "Promotion conditionnelle avec {subjects} matières validées et une moyenne de {average}/20.",
+      "repeated": "Ne remplit pas les critères de promotion. A validé {subjects} matières avec une moyenne de {average}/20."
+    },
     "exportButton": "Exporter",
     "Export": {
+      "remarks": "Appréciations",
+      "subjectsPassed": "Validées : {passed} / {total} matières",
+      "notApplicable": "N/A",
+      "excellent": "Excellent",
+      "veryGood": "Très Bien",
+      "good": "Bien",
+      "satisfactory": "Assez Bien",
+      "passing": "Passable",
+      "needsImprovement": "Peut Mieux Faire",
+      "weak": "Faible",
+      "veryWeak": "Très Faible",
       "deanOfStudiesSignature": "Signature du Censeur",
       "principalSignature": "Signature du Principal",
       "promotionStatusLabel": "Décision de Passage",
@@ -4780,5 +5228,237 @@
     "saturday": "Samedi",
     "sunday": "Dimanche",
     "unknownDay": "Jour Inconnu"
+  },
+
+  "TermsPage": {
+    "title": "Conditions d'Utilisation",
+    "lastUpdated": "Dernière mise à jour : 26 octobre 2023",
+    "privacyPolicyLinkText": "Politique de Confidentialité",
+    "disclaimer": {
+      "title": "Avis Important",
+      "content": "Ce document est un modèle et ne constitue pas un avis juridique. Vous devriez consulter un professionnel du droit qualifié pour vous assurer que ces conditions sont appropriées et applicables à votre situation spécifique et à votre juridiction."
+    },
+    "introduction": {
+      "p1": "Bienvenue sur KamerSchool ! Ces Conditions d'Utilisation ('Conditions') régissent votre utilisation de la plateforme de gestion scolaire KamerSchool, y compris notre site web, nos services et nos logiciels (collectivement, le 'Service'), fournis par [Votre Raison Sociale, ex: KamerSchool SARL] ('KamerSchool', 'nous', 'notre', ou 'nos').",
+      "p2": "En accédant, en vous inscrivant ou en utilisant notre Service, vous acceptez d'être lié par ces Conditions et par notre Politique de Confidentialité. Si vous utilisez le Service au nom d'un établissement d'enseignement ou d'une organisation ('École'), vous acceptez ces Conditions pour cette organisation et garantissez que vous avez l'autorité de lier cette organisation à ces conditions. Si vous n'êtes pas d'accord, n'utilisez pas le Service."
+    },
+    "section1": {
+      "title": "1. Définitions",
+      "p1": "Pour rendre ces Conditions plus claires, voici quelques définitions de base :",
+      "terms": {
+        "service": {
+          "title": "Service",
+          "desc": "La plateforme KamerSchool et toutes les fonctionnalités, outils, sites web et API associés."
+        },
+        "school": {
+          "title": "École",
+          "desc": "L'établissement d'enseignement ou l'organisation qui s'abonne à notre Service."
+        },
+        "user": {
+          "title": "Utilisateur",
+          "desc": "Toute personne autorisée par une École à utiliser le Service, y compris les administrateurs, enseignants, parents et élèves."
+        },
+        "content": {
+          "title": "Contenu",
+          "desc": "Toutes données, textes, fichiers, informations, images ou autres matériels soumis au Service par une École ou ses Utilisateurs, y compris les données des élèves, les notes et les communications."
+        }
+      }
+    },
+    "section2": {
+      "title": "2. Éligibilité et Inscription au Compte",
+      "p1": "Pour utiliser le Service, vous devez être autorisé par une École abonnée. L'École est responsable de la création et de la gestion des comptes Utilisateur. Vous acceptez de fournir des informations exactes, actuelles et complètes lors de l'inscription et de maintenir les informations de votre compte à jour.",
+      "p2": "Vous êtes responsable de la protection de votre mot de passe et de toutes les activités qui se déroulent sur votre compte. Vous devez nous informer immédiatement de toute utilisation non autorisée de votre compte."
+    },
+    "section3": {
+      "title": "3. Conduite et Responsabilités de l'Utilisateur",
+      "subsections": {
+        "acceptableUse": {
+          "title": "Utilisation Acceptable",
+          "p1": "Vous vous engagez à ne pas abuser du Service et à n'aider personne à le faire. Cela inclut, sans s'y limiter, les actions suivantes :",
+          "list": {
+            "item1": "Sonder, scanner ou tester la vulnérabilité de tout système ou réseau.",
+            "item2": "Violer ou contourner de toute autre manière les mesures de sécurité ou d'authentification.",
+            "item3": "Télécharger ou partager du Contenu illégal, préjudiciable, diffamatoire, obscène ou portant atteinte aux droits de propriété intellectuelle.",
+            "item4": "Utiliser le Service à des fins autres que celles prévues pour l'éducation et l'administration scolaire."
+          }
+        },
+        "schoolResponsibilities": {
+          "title": "Responsabilités de l'École",
+          "p1": "L'École est seule responsable de :",
+          "list": {
+            "item1": "Sa conformité et celle de ses Utilisateurs à ces Conditions.",
+            "item2": "L'exactitude, la qualité et la légalité de tout le Contenu saisi dans le Service.",
+            "item3": "L'obtention de tous les consentements et autorisations nécessaires des parents, tuteurs et du personnel pour collecter, stocker et traiter leurs données sur la plateforme KamerSchool, conformément aux lois applicables."
+          }
+        }
+      }
+    },
+    "section4": {
+      "title": "4. Confidentialité et Protection des Données",
+      "p1": "Votre vie privée est primordiale pour nous. Notre collecte et notre utilisation des informations personnelles en rapport avec le Service sont décrites dans notre {privacyPolicyLink}.",
+      "p2": "Nous agissons en tant que 'sous-traitant' des données pour le Contenu de l'École, et l'École est le 'responsable du traitement'. Nous ne traiterons les données qu'au nom de l'École et conformément à ses instructions."
+    },
+    "section5": {
+      "title": "5. Propriété Intellectuelle et Propriété du Contenu",
+      "subsections": {
+        "schoolContent": {
+          "title": "Votre Contenu vous Appartient",
+          "p1": "L'École conserve tous les droits de propriété sur le Contenu qu'elle ou ses Utilisateurs soumettent au Service. Nous ne revendiquons aucune propriété sur votre Contenu."
+        },
+        "ourLicense": {
+          "title": "Notre Licence Limitée sur Votre Contenu",
+          "p1": "En utilisant le Service, vous accordez à KamerSchool une licence mondiale, non exclusive, libre de droits et sous-licenciable pour utiliser, traiter, stocker, reproduire, modifier et afficher le Contenu, uniquement dans le but de vous fournir, maintenir et améliorer le Service."
+        }
+      }
+    },
+    "section6": {
+      "title": "6. Frais et Paiement",
+      "p1": "Le Service est fourni sur la base d'un abonnement. L'École s'engage à payer tous les frais applicables tels que décrits sur notre page de tarification ou dans un accord séparé. Tous les frais sont non remboursables, sauf si la loi l'exige.",
+      "p2": "Nous nous réservons le droit de modifier nos tarifs avec un préavis de 30 jours. Votre utilisation continue du Service après le changement de tarif constitue votre accord pour payer le montant modifié."
+    },
+    "section7": {
+      "title": "7. Résiliation",
+      "p1": "L'École peut résilier son abonnement à tout moment. Nous pouvons suspendre ou résilier votre accès au Service si vous violez de manière substantielle ces Conditions. À la résiliation, votre droit d'utiliser le Service cessera immédiatement et nous donnerons à l'École, sur demande, la possibilité d'exporter son Contenu."
+    },
+    "section8": {
+      "title": "8. Exclusion de Garanties",
+      "p1": "LE SERVICE EST FOURNI 'TEL QUEL' ET 'SELON LA DISPONIBILITÉ' SANS AUCUNE GARANTIE D'AUCUNE SORTE, EXPRESSE OU IMPLICITE, Y COMPRIS, MAIS SANS S'Y LIMITER, LES GARANTIES IMPLICITES DE QUALITÉ MARCHANDE, D'ADÉQUATION À UN USAGE PARTICULIER ET DE NON-VIOLATION. NOUS NE GARANTISSONS PAS QUE LE SERVICE SERA ININTERROMPU, SÉCURISÉ OU EXEMPT D'ERREURS."
+    },
+    "section9": {
+      "title": "9. Limitation de Responsabilité",
+      "p1": "DANS LA MESURE MAXIMALE PERMISE PAR LA LOI, KAMERSCHOOL NE SERA PAS RESPONSABLE DES DOMMAGES INDIRECTS, ACCESSOIRES, SPÉCIAUX, CONSÉCUTIFS OU PUNITIFS, NI D'AUCUNE PERTE DE PROFITS OU DE REVENUS, QU'ILS SOIENT SUBIS DIRECTEMENT OU INDIRECTEMENT, NI D'AUCUNE PERTE DE DONNÉES, D'UTILISATION, DE CLIENTÈLE OU D'AUTRES PERTES INCORPORELLES, RÉSULTANT DE VOTRE UTILISATION DU SERVICE."
+    },
+    "section10": {
+      "title": "10. Modifications de ces Conditions",
+      "p1": "Nous nous réservons le droit de modifier ces Conditions à tout moment. Si nous apportons des modifications importantes, nous vous en informerons, par exemple en envoyant un e-mail ou en affichant un avis bien en vue dans le Service.",
+      "p2": "Votre utilisation continue du Service après l'entrée en vigueur de ces modifications constitue votre acceptation des nouvelles Conditions."
+    },
+    "section11": {
+      "title": "11. Droit Applicable et Juridiction",
+      "p1": "Ces Conditions seront régies et interprétées conformément aux lois de la République du Cameroun, sans tenir compte de ses principes de conflit de lois. Vous acceptez de vous soumettre à la juridiction exclusive des tribunaux compétents situés au Cameroun pour résoudre toute question juridique découlant des Conditions."
+    },
+    "section12": {
+      "title": "12. Coordonnées",
+      "p1": "Si vous avez des questions sur ces Conditions, veuillez nous contacter à {email}."
+    }
+  },
+  "PrivacyPage": {
+    "title": "Politique de Confidentialité",
+    "lastUpdated": "Dernière mise à jour : 26 octobre 2023",
+    "termsLinkText": "Conditions d'Utilisation",
+    "introduction": {
+      "p1": "Votre vie privée est d'une importance capitale pour nous. Chez KamerSchool ('nous', 'notre', 'nos'), nous avons quelques principes fondamentaux concernant les données que nous traitons via notre plateforme de gestion scolaire (le 'Service').",
+      "p2": "Cette Politique de Confidentialité explique comment nous collectons, utilisons, partageons et protégeons les informations en relation avec notre Service. Cette politique s'applique à tous les visiteurs, utilisateurs et autres personnes qui accèdent au Service ('Utilisateurs')."
+    },
+    "section1": {
+      "title": "1. Notre Rôle en tant que Sous-traitant",
+      "p1": "Dans le contexte de notre Service, il est important de comprendre les rôles en matière de protection des données :",
+      "terms": {
+        "controller": {
+          "title": "Responsable du traitement",
+          "desc": "L'École est le Responsable du traitement. Elle détermine les finalités et les moyens du traitement des données personnelles. Elle détient et est responsable du Contenu (données des élèves, des parents et du personnel) qu'elle télécharge sur KamerSchool."
+        },
+        "processor": {
+          "title": "Sous-traitant",
+          "desc": "KamerSchool est le Sous-traitant. Nous traitons le Contenu au nom de l'École et selon ses instructions."
+        }
+      },
+      "p2": "Notre traitement de vos données est régi par notre accord avec l'École et par cette Politique de Confidentialité."
+    },
+    "section2": {
+      "title": "2. Informations que nous Collectons",
+      "p1": "Nous collectons des informations de différentes manières pour fournir et améliorer notre Service.",
+      "subsections": {
+        "schoolProvided": {
+          "title": "Informations Fournies par l'École",
+          "p1": "L'École nous fournit les données nécessaires au fonctionnement de la plateforme. Cela inclut :",
+          "list": {
+            "item1": "Informations sur l'élève : Nom, identifiant, niveau de classe, registres de présence, notes et coordonnées des parents/tuteurs.",
+            "item2": "Informations sur les Parents/Tuteurs : Nom et coordonnées (e-mail, numéro de téléphone).",
+            "item3": "Informations sur le Personnel : Nom, rôle et coordonnées des enseignants et administrateurs."
+          }
+        },
+        "userProvided": {
+          "title": "Informations que vous Fournissez Directement",
+          "p1": "Nous collectons les informations que vous fournissez lorsque vous créez un compte, mettez à jour votre profil, communiquez avec d'autres utilisateurs ou contactez notre équipe de support."
+        },
+        "autoCollected": {
+          "title": "Informations Collectées Automatiquement",
+          "p1": "Lorsque vous utilisez le Service, nous collectons automatiquement des informations techniques, telles que votre adresse IP, type de navigateur, informations sur l'appareil et données d'utilisation (ex: fonctionnalités utilisées, pages visitées). Nous utilisons ces informations pour maintenir la sécurité et améliorer notre Service. Cela peut impliquer l'utilisation de cookies et de technologies similaires."
+        }
+      }
+    },
+    "section3": {
+      "title": "3. Comment nous Utilisons les Informations",
+      "p1": "Nous utilisons les informations que nous collectons uniquement aux fins suivantes :",
+      "list": {
+        "item1": "Pour fournir, exploiter, maintenir et améliorer notre Service.",
+        "item2": "Pour permettre la communication entre l'École, les enseignants, les parents et les élèves, comme autorisé par l'École.",
+        "item3": "Pour fournir un support client et répondre à vos demandes.",
+        "item4": "À des fins de sécurité, pour prévenir la fraude et pour faire respecter nos Conditions d'Utilisation."
+      }
+    },
+    "section4": {
+      "title": "4. Comment nous Partageons les Informations",
+      "disclaimer": "Nous ne vendons, ne louons, ni n'échangeons les informations personnelles d'aucun Utilisateur.",
+      "p1": "Nous ne partageons les informations que dans les circonstances limitées suivantes :",
+      "list": {
+        "item1": "Avec l'École : Tout le Contenu est accessible aux administrateurs autorisés de l'École concernée.",
+        "item2": "Avec des Fournisseurs de Services Tiers : Nous utilisons des fournisseurs tiers de confiance pour nous aider à exploiter le Service (ex: hébergement cloud, sauvegarde des données). Ces fournisseurs sont contractuellement tenus de protéger vos données et il leur est interdit de les utiliser à d'autres fins.",
+        "item3": "Pour des Raisons Légales : Nous pouvons divulguer des informations si la loi l'exige ou si nous croyons de bonne foi qu'une telle action est nécessaire pour se conformer à une obligation légale, protéger nos droits ou prévenir un préjudice."
+      }
+    },
+    "section5": {
+      "title": "5. Sécurité des Données",
+      "p1": "Nous prenons la sécurité de vos données très au sérieux. Nous utilisons une combinaison de contrôles techniques, administratifs et physiques pour maintenir la sécurité de vos informations.",
+      "p2": "Les mesures incluent le chiffrement des données en transit (via TLS) et au repos, des contrôles d'accès stricts au sein de notre organisation et des évaluations de sécurité régulières. Cependant, aucune méthode de transmission ou de stockage n'est sécurisée à 100%, et nous ne pouvons garantir une sécurité absolue."
+    },
+    "section6": {
+      "title": "6. Conservation des Données",
+      "p1": "Nous conservons le Contenu aussi longtemps que le compte de l'École est actif ou que nécessaire pour fournir le Service. Après la résiliation du compte d'une École, nous supprimerons ou anonymiserons toutes les données personnelles associées dans un délai commercialement raisonnable, conformément à notre accord avec l'École."
+    },
+    "section7": {
+      "title": "7. Vos Droits en matière de Protection des Données",
+      "p1": "Étant le Sous-traitant, les demandes d'exercice de vos droits de protection des données doivent être adressées à votre École (le Responsable du traitement). Cependant, nous assisterons l'École pour répondre à ces demandes. Vos droits incluent généralement :",
+      "list": {
+        "item1": "Le droit d'accès – Vous pouvez demander des copies de vos données personnelles.",
+        "item2": "Le droit de rectification – Vous pouvez demander à l'École de corriger toute information que vous jugez inexacte.",
+        "item3": "Le droit à l'effacement – Vous pouvez demander à l'École d'effacer vos données personnelles, sous certaines conditions.",
+        "item4": "Le droit d'opposition ou de limitation du traitement – Vous pouvez vous opposer au traitement de vos données ou demander à l'École de le limiter, sous certaines conditions."
+      },
+      "p2": "Votre École est responsable du traitement de ces demandes. Veuillez d'abord contacter l'administration de votre école."
+    },
+    "section8": {
+      "title": "8. Vie Privée des Enfants",
+      "disclaimer": "KamerSchool ne collecte pas sciemment d'informations personnelles directement auprès d'enfants de moins de 13 ans sans le consentement parental obtenu par l'École.",
+      "p1": "Notre Service est destiné à être utilisé par les Écoles, et toutes les données des élèves sont fournies et contrôlées par l'École. L'École est responsable du respect des lois applicables sur la protection de la vie privée des enfants, comme l'obtention du consentement parental avant de collecter des informations personnelles auprès des enfants. Veuillez consulter nos {termsLink} pour plus d'informations sur les responsabilités de l'École.",
+      "p2": "Si vous pensez que nous avons collecté par inadvertance des informations sur un enfant sans le consentement approprié, veuillez nous contacter immédiatement afin que nous puissions prendre les mesures qui s'imposent."
+    },
+    "section9": {
+      "title": "9. Transferts Internationaux de Données",
+      "p1": "Vos informations peuvent être stockées et traitées dans tout pays où nous avons des installations ou où nous engageons des prestataires de services. En utilisant le Service, vous comprenez que vos informations peuvent être transférées vers des pays autres que votre pays de résidence, qui peuvent avoir des règles de protection des données différentes. Nous nous assurerons que des garanties appropriées sont en place pour de tels transferts."
+    },
+    "section10": {
+      "title": "10. Modifications de cette Politique de Confidentialité",
+      "p1": "Nous pouvons modifier ou mettre à jour cette Politique de Confidentialité de temps à autre. Nous vous informerons de tout changement important en publiant la nouvelle politique sur cette page et, le cas échéant, par un avis au sein du Service. Nous vous encourageons à consulter cette politique périodiquement."
+    },
+    "section11": {
+      "title": "11. Comment nous Contacter",
+      "p1": "Si vous avez des questions, des préoccupations ou des réclamations concernant notre Politique de Confidentialité ou nos pratiques de traitement des données, veuillez contacter notre Délégué à la Protection des Données à l'adresse {email}."
+    }
+  },
+  "ErrorPages": {
+    "notFound": {
+      "title": "Oups ! Cette page fait l'école buissonnière.",
+      "description": "Il semble que la page que vous cherchez a été égarée dans le cartable numérique. Remettons-vous sur le bon chemin.",
+      "goHomeBtn": "Aller à l'accueil",
+      "searchPlaceholder": "Rechercher sur le site..."
+    },
+    "serverError": {
+      "title": "Un problème technique dans le système.",
+      "description": "Nos serveurs rencontrent un petit souci. Notre équipe technique a été prévenue et travaille à sa résolution. Veuillez réessayer dans un instant.",
+      "tryAgainBtn": "Réessayer",
+      "goHomeBtn": "Aller à l'accueil"
+    }
   }
 }

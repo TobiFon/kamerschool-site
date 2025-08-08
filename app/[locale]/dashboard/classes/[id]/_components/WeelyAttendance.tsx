@@ -41,6 +41,7 @@ import { Badge } from "@/components/ui/badge";
 import { exportAttendanceToPDF } from "@/lib/utils";
 import RecordAttendanceDialog from "../record-attendance/page";
 import { useRecordAttendance } from "./use-record-attendance";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const statusColors = {
   present: "bg-emerald-500 text-white",
@@ -59,6 +60,7 @@ const statusIcons = {
 const WeeklyAttendanceTab = ({ classId, className = "", schoolData = {} }) => {
   const t = useTranslations("attendance");
   const [weekStart, setWeekStart] = useState(undefined);
+  const { canEdit } = useCurrentUser();
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ["attendance", "weekly", classId, weekStart],
@@ -343,7 +345,11 @@ const WeeklyAttendanceTab = ({ classId, className = "", schoolData = {} }) => {
         <CardContent>
           <div className="flex justify-between items-center mt-6">
             <div className="flex items-center gap-1.5">
-              <Button className="gap-2" onClick={openCreateDialog}>
+              <Button
+                className="gap-2"
+                onClick={openCreateDialog}
+                disabled={!canEdit}
+              >
                 <ClipboardCheck className="h-4 w-4" />
                 {t("recordAttendance")}
               </Button>
@@ -363,8 +369,8 @@ const WeeklyAttendanceTab = ({ classId, className = "", schoolData = {} }) => {
                   updatedClassAttendanceRate >= 90
                     ? "success"
                     : updatedClassAttendanceRate >= 80
-                    ? "outline"
-                    : "destructive"
+                      ? "outline"
+                      : "destructive"
                 }
                 className="ml-2"
               >
@@ -596,8 +602,8 @@ const WeeklyAttendanceTab = ({ classId, className = "", schoolData = {} }) => {
                           student.summary.attendance_rate >= 90
                             ? "success"
                             : student.summary.attendance_rate >= 80
-                            ? "outline"
-                            : "destructive"
+                              ? "outline"
+                              : "destructive"
                         }
                         className="ml-auto"
                       >
