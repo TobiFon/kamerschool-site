@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { getMessages, getTranslations } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import { routing } from "@/i18n/routing";
-
+import { Analytics } from "@vercel/analytics/next";
 // UI imports
 import { Toaster } from "sonner";
 import "../globals.css";
@@ -121,6 +121,7 @@ export default async function LocaleLayout({
       <body
         className={`${inter.variable} font-sans antialiased bg-background text-foreground`}
       >
+        <Analytics />
         <NextIntlClientProvider messages={messages}>
           {children}
           <Toaster richColors position="top-right" />
